@@ -1,0 +1,30 @@
+{
+    "name": "@docs-as-code/form-renderer",
+    "version": "0.1.0",
+    "private": false,
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": ["dist"],
+    "scripts": {
+        "build": "tsc -b",
+        "clean": "rimraf dist"
+    },
+    "peerDependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "dependencies": {
+        "react-hook-form": "^7.53.0",
+        "zod": "^3.23.8",
+    "@docs-as-code/shared-types": "workspace:*",
+    "@docs-as-code/ui-components": "workspace:*",
+    "@hookform/resolvers": "^3.9.0"
+    },
+    "devDependencies": {
+        "typescript": "^5.5.4",
+        "@types/react": "^18.3.3",
+        "@types/react-dom": "^18.3.0"
+    }
+}

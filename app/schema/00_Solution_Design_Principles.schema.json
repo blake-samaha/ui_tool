@@ -1,0 +1,262 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://schemas.cognite.ai/requirements/00_Solution_Design_Principles.schema.json",
+    "title": "00 Solution Design Principles",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schemaVersion",
+        "moduleId",
+        "environments"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "type": "integer",
+            "minimum": 1
+        },
+        "moduleId": {
+            "type": "string",
+            "description": "Snake_case module identifier used as a prefix in external IDs.",
+            "pattern": "^[a-z0-9]+(?:_[a-z0-9]+)*$"
+        },
+        "projectId": {
+            "type": "string",
+            "description": "Optional human/project identifier for documentation."
+        },
+        "environments": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/$defs/environment"
+            }
+        },
+        "space": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "externalId"
+            ],
+            "properties": {
+                "externalId": {
+                    "type": "string",
+                    "description": "External ID of the target DM space.",
+                    "pattern": "^[a-z0-9_\-:.]+$"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "rawSources": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/rawSource"
+            }
+        },
+        "toolkit": {
+            "$ref": "#/$defs/toolkit"
+        },
+        "promotion": {
+            "$ref": "#/$defs/promotion"
+        },
+        "accessRoles": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/accessRole"
+            }
+        },
+        "globalStandards": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "globalNamingConvention": {
+                    "type": "string"
+                },
+                "timestampStandard": {
+                    "type": "string"
+                },
+                "requiredPropertyForAllObjects": {
+                    "type": "string"
+                }
+            }
+        },
+        "coreModelInheritance": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "assetView": {
+                    "$ref": "#/$defs/viewRef"
+                },
+                "eventView": {
+                    "$ref": "#/$defs/viewRef"
+                }
+            }
+        },
+        "externalModels": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/externalModelImport"
+            }
+        },
+        "observability": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "owner": { "type": "string" },
+                "sla": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "freshnessMinutes": { "type": "integer", "minimum": 0 },
+                        "maxErrorRatePct": { "type": "number", "minimum": 0 }
+                    }
+                },
+                "alerts": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "channel": { "type": "string" },
+                        "escalation": { "type": "string" }
+                    }
+                }
+            }
+        },
+        "idMacros": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "moduleIdPrefix": { "type": "boolean", "default": true },
+                "examples": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                }
+            }
+        }
+    },
+    "$defs": {
+        "environment": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "cdf_cluster",
+                "cdf_region"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "cdf_cluster": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "cdf_region": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "idp_tenant_id": { "type": "string" },
+                "admin_group_source_id": { "type": "string" },
+                "user_group_source_id": { "type": "string" }
+            }
+        },
+        "rawSource": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "sourceSystem",
+                "database",
+                "tables"
+            ],
+            "properties": {
+                "sourceSystem": { "type": "string" },
+                "database": { "type": "string" },
+                "tables": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string" }
+                },
+                "description": { "type": "string" }
+            }
+        },
+        "toolkit": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "deployStrategy": {
+                    "type": "string",
+                    "enum": ["upsert", "replace"]
+                },
+                "dryRun": { "type": "boolean" },
+                "retries": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "maxAttempts": { "type": "integer", "minimum": 0 },
+                        "backoff": {
+                            "type": "string",
+                            "enum": ["exponential", "linear", "fixed"]
+                        },
+                        "maxBackoffSeconds": {
+                            "type": "integer",
+                            "minimum": 0
+                        }
+                    }
+                }
+            }
+        },
+        "promotion": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "fromEnv": { "type": "string" },
+                "toEnv": { "type": "string" },
+                "guardrails": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": ["diff_only", "require_approval"]
+                    }
+                }
+            }
+        },
+        "accessRole": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+                "name": { "type": "string" },
+                "sourceIdVariable": { "type": "string" },
+                "permissionsSummary": { "type": "string" },
+                "capabilities": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                }
+            }
+        },
+        "viewRef": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["space", "externalId", "version"],
+            "properties": {
+                "space": { "type": "string" },
+                "externalId": { "type": "string" },
+                "version": { "type": "string" }
+            }
+        },
+        "externalModelImport": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["space", "models"],
+            "properties": {
+                "space": { "type": "string" },
+                "models": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string" }
+                }
+            }
+        }
+    }
+}
+

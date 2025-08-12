@@ -1,0 +1,4 @@
+externalId,well_externalId,separator_vessel_externalIds,startTime,endTime,testDuration,oilRate,gasRate,waterRate,gor,wcut,ftp,fcp,chokeSize,testMethod
+wt_n1w1_1,n1_w1,n_sf1_sv2,2023-01-15T08:00:00Z,2023-01-15T12:00:00Z,4,500,750000,100,1500,0.17,1200,800,"32/64 in",separator
+wt_n2w1_1,n2_w1,n_sf2_sv3,2023-01-16T10:00:00Z,2023-01-16T14:00:00Z,4,600,960000,120,1600,0.17,1300,850,"34/64 in",separator
+wt_s1w1_1,s1_w1,s_sf1_sv2,2023-01-17T09:00:00Z,2023-01-17T17:00:00Z,8,450,630000,90,1400,0.17,1100,750,"30/64 in",separator 

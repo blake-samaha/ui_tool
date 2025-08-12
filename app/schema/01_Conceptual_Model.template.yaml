@@ -1,0 +1,47 @@
+# schema: https://schemas.cognite.ai/requirements/01_Conceptual_Model.schema.json
+schemaVersion: 1
+moduleId: my_module
+
+objects:
+  - name: Well
+    objectId: well
+    type: Asset
+    viewExternalId: my_module:view:well:v1
+    containerExternalId: my_module:container:well:v1
+    space: sp_my_project_space
+  - name: Work Order
+    objectId: workOrder
+    type: Event
+    viewExternalId: my_module:view:work_order:v1
+    containerExternalId: my_module:container:work_order:v1
+    space: sp_my_project_space
+
+relationships:
+  - from: Work Order
+    to: Well
+    relationshipId: workOrder_performedOn_well
+    description: A Work Order is performed on a Well.
+    type: direct
+    multiplicity: 1:N
+    label: performedOn
+    sourceResolution: join on workOrder.assetExternalId -> well.externalId
+
+externalReferences:
+  - externalModel: CogniteAsset
+    space: cdf_cdm
+    implements: CogniteCore.Asset v1
+
+dataModel:
+  externalId: my_module:dm:well_performance
+  version: v1
+  groupedViews:
+    - my_module:view:well:v1
+    - my_module:view:work_order:v1
+
+performanceHints:
+  indexes:
+    - onObject: Work Order
+      fields: [workOrderNumber]
+  uniqueness: workOrderNumber
+
+

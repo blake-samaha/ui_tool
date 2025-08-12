@@ -1,0 +1,8 @@
+externalId,name,separation_facility_externalId,tag,separatorType,designPressure,designTemperature,vesselDiameter,vesselLength,ratedLiquidVolume,levelSensorId,pressureSensorId,temperatureSensorId,reliefValveSetPressure,corrosionAllowance,inspectionInterval
+n_sf1_sv1,North SF1 Vessel 1,north_sf_1,N-SF1-SV1,3-phase,"750 psi","150 F","10 ft","40 ft","500 bbl",LIC-101,PIC-101,TIC-101,"700 psi","0.125 in","1 year"
+n_sf1_sv2,North SF1 Vessel 2,north_sf_1,N-SF1-SV2,test,"750 psi","150 F","8 ft","30 ft","300 bbl",LIC-102,PIC-102,TIC-102,"700 psi","0.125 in","1 year"
+n_sf2_sv1,North SF2 Vessel 1,north_sf_2,N-SF2-SV1,3-phase,"750 psi","150 F","12 ft","50 ft","700 bbl",LIC-201,PIC-201,TIC-201,"700 psi","0.125 in","1 year"
+n_sf2_sv2,North SF2 Vessel 2,north_sf_2,N-SF2-SV2,2-phase,"750 psi","150 F","10 ft","40 ft","500 bbl",LIC-202,PIC-202,TIC-202,"700 psi","0.125 in","1 year"
+n_sf2_sv3,North SF2 Vessel 3,north_sf_2,N-SF2-SV3,test,"750 psi","150 F","8 ft","30 ft","300 bbl",LIC-203,PIC-203,TIC-203,"700 psi","0.125 in","1 year"
+s_sf1_sv1,South SF1 Vessel 1,south_sf_1,S-SF1-SV1,3-phase,"750 psi","150 F","10 ft","40 ft","500 bbl",LIC-301,PIC-301,TIC-301,"700 psi","0.125 in","1 year"
+s_sf1_sv2,South SF1 Vessel 2,south_sf_1,S-SF1-SV2,test,"750 psi","150 F","8 ft","30 ft","300 bbl",LIC-302,PIC-302,TIC-302,"700 psi","0.125 in","1 year" 

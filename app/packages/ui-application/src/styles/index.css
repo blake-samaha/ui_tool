@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App base theming */
+html, body, #root {
+    height: 100%;
+}
+
+body {
+    @apply bg-slate-50 text-slate-900;
+}
+
+/* Smoothen scroll experience for long forms */
+html {
+    scroll-behavior: smooth;
+}

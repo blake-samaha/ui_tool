@@ -1,0 +1,4 @@
+externalId,name,network_externalId,latitude,longitude,numberOfCompressorSkids,aggregateHorsepower,designSuctionPressure,designDischargePressure,installedGasCoolingCapacity,powerSupplyType,environmentalPermitIds
+north_cs_1,North Compressor Station 1,north_network_1,31.8983,-102.0779,3,"6000 HP","200 psi","2000 psi","100 MMBtu/hr",gas-engine,PERMIT-CS-1001
+north_cs_2,North Compressor Station 2,north_network_2,31.9054,-102.0881,4,"8000 HP","220 psi","2200 psi","120 MMBtu/hr",gas-engine,PERMIT-CS-1002
+south_cs_1,South Compressor Station 1,south_network_1,31.8899,-102.0652,3,"6000 HP","210 psi","2100 psi","110 MMBtu/hr",grid,PERMIT-CS-1003 

@@ -1,0 +1,4 @@
+externalId,name,basin_externalId,fluidSystem,designCapacity,operatingStatus,targetInjectionDischargePressure,targetProductionSeparatorInletPressure,pAndIdReference
+north_network_1,North Network 1,north_basin,multiphase,"100 MMscf/d",active,"2000 psi","500 psi",PID-10001
+north_network_2,North Network 2,north_basin,multiphase,"150 MMscf/d",active,"2200 psi","550 psi",PID-10002
+south_network_1,South Network 1,south_basin,multiphase,"120 MMscf/d",active,"2100 psi","525 psi",PID-10003 
