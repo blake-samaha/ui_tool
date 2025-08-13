@@ -20,6 +20,7 @@ export function Tier01Page() {
     const [formKey, setFormKey] = React.useState(0);
     const [yaml, setYaml] = React.useState('');
     const [picked, setPicked] = React.useState<ModuleRef | null | undefined>(undefined);
+    const [working, setWorking] = React.useState<any>(defaults);
 
     React.useEffect(() => {
         (async () => {
@@ -29,7 +30,9 @@ export function Tier01Page() {
             try {
                 const raw = await client.read(uiState);
                 if (raw && raw.trim().length > 0) {
-                    setDefaults(JSON.parse(raw));
+                    const parsed = JSON.parse(raw);
+                    setDefaults(parsed);
+                    setWorking(parsed);
                     setFormKey((k) => k + 1);
                     return;
                 }
@@ -37,12 +40,18 @@ export function Tier01Page() {
             try {
                 const text = await client.read(yamlPath);
                 if (text && text.trim().length > 0) {
-                    setDefaults(parseYaml<any>(text));
+                    const parsed = parseYaml<any>(text);
+                    setDefaults(parsed);
+                    setWorking(parsed);
                     setFormKey((k) => k + 1);
                 }
             } catch {}
         })();
     }, [settings.projectRoot, client, picked]);
+
+    React.useEffect(() => {
+        setWorking(defaults);
+    }, [defaults]);
 
     async function handleSaveStep(data: any) {
         if (!settings.projectRoot) return;
@@ -81,10 +90,17 @@ export function Tier01Page() {
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <WizardShell key={formKey} steps={tier01Steps} initialData={defaults} onChange={(d: any) => setDefaults(d)} onSaveStep={handleSaveStep} onFinish={handleFinish} />
+                    <WizardShell
+                        key={formKey}
+                        steps={tier01Steps}
+                        initialData={defaults}
+                        onChange={(d: any) => setWorking(d)}
+                        onSaveStep={handleSaveStep}
+                        onFinish={handleFinish}
+                    />
                 </div>
                 <aside className="space-y-4">
-                    <JsonExplorer title="Current 01 (working data)" data={defaults} defaultOpenDepth={1} />
+                    <JsonExplorer title="Current 01 (working data)" data={working} defaultOpenDepth={1} />
                 </aside>
             </div>
             {yaml && <pre className="border rounded p-3 whitespace-pre-wrap leading-5 text-sm mt-3">{yaml}</pre>}

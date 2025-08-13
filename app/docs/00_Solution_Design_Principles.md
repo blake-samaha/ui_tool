@@ -42,11 +42,11 @@ The AI will use this document to generate the foundational configuration.
 - **Business Goal:**
   `<REPLACE_ME: A one-sentence summary of the primary business objective.>`
 - **Primary Use Cases:**
-  - `<REPLACE_ME: Use Case 1>`
-  - `<REPLACE_ME: Use Case 2>`
+    - `<REPLACE_ME: Use Case 1>`
+    - `<REPLACE_ME: Use Case 2>`
 - **Key Stakeholders:**
-  - `<REPLACE_ME: Role 1, e.g., Reliability Engineer>`
-  - `<REPLACE_ME: Role 2, e.g., Operations Manager>`
+    - `<REPLACE_ME: Role 1, e.g., Reliability Engineer>`
+    - `<REPLACE_ME: Role 2, e.g., Operations Manager>`
 
 ______________________________________________________________________
 
@@ -71,20 +71,20 @@ The AI will use these to create `config.[env].yaml` files.
 -->
 
 - **Environment:** `dev`
-  - **`cdf_cluster`:** `<REPLACE_ME: e.g., westeurope-1>`
-  - **`cdf_region`:** `<REPLACE_ME: e.g., eu-west-1>`
-  - **`idp_tenant_id`:** `<REPLACE_ME: IdP tenant ID>`
-  - **`admin_group_source_id`:**
+    - **`cdf_cluster`:** `<REPLACE_ME: e.g., westeurope-1>`
+    - **`cdf_region`:** `<REPLACE_ME: e.g., eu-west-1>`
+    - **`idp_tenant_id`:** `<REPLACE_ME: IdP tenant ID>`
+    - **`admin_group_source_id`:**
     `<REPLACE_ME: IdP source ID for the admin group in dev>`
-  - **`user_group_source_id`:**
+    - **`user_group_source_id`:**
     `<REPLACE_ME: IdP source ID for the user group in dev>`
 - **Environment:** `prod`
-  - **`cdf_cluster`:** `<REPLACE_ME: e.g., westeurope-1>`
-  - **`cdf_region`:** `<REPLACE_ME: e.g., eu-west-1>`
-  - **`idp_tenant_id`:** `<REPLACE_ME: IdP tenant ID>`
-  - **`admin_group_source_id`:**
+    - **`cdf_cluster`:** `<REPLACE_ME: e.g., westeurope-1>`
+    - **`cdf_region`:** `<REPLACE_ME: e.g., eu-west-1>`
+    - **`idp_tenant_id`:** `<REPLACE_ME: IdP tenant ID>`
+    - **`admin_group_source_id`:**
     `<REPLACE_ME: IdP source ID for the admin group in prod>`
-  - **`user_group_source_id`:**
+    - **`user_group_source_id`:**
     `<REPLACE_ME: IdP source ID for the user group in prod>`
 
 ### CDF Data Space
@@ -101,11 +101,11 @@ The AI will use these to create `config.[env].yaml` files.
 <!-- Define each source system that will provide data to CDF RAW. -->
 
 - **Source System:** `<REPLACE_ME: e.g., "SAP S4/HANA">`
-  - **RAW Database Name:** `<REPLACE_ME: e.g., raw_sap_s4hana>`
-  - **RAW Table(s):**
-    - `<REPLACE_ME: table_name_1>`
-    - `<REPLACE_ME: table_name_2>`
-  - **Description:** `<REPLACE_ME: What data these tables hold.>`
+    - **RAW Database Name:** `<REPLACE_ME: e.g., raw_sap_s4hana>`
+    - **RAW Table(s):**
+        - `<REPLACE_ME: table_name_1>`
+        - `<REPLACE_ME: table_name_2>`
+    - **Description:** `<REPLACE_ME: What data these tables hold.>`
 
 ### Toolkit Deployment & Promotion
 
@@ -113,34 +113,34 @@ The AI will use these to create `config.[env].yaml` files.
 - **Dry Run:** `<REPLACE_ME: true|false>`
 - **Retries:** `<REPLACE_ME: max_attempts=6 backoff=exponential>`
 - **Promotion Rules:**
-  - **From:** `dev`
-  - **To:** `prod`
-  - **Guardrails:**
-    - `diff_only`
-    - `require_approval`
+    - **From:** `dev`
+    - **To:** `prod`
+    - **Guardrails:**
+        - `diff_only`
+        - `require_approval`
 
 ### Access Management & Security Roles
 
 <!-- Define the access roles needed for this solution. -->
 
 - **Role:** `<REPLACE_ME: e.g., Data Administrator>`
-  - **Source ID Variable:** `{{ admin_group_source_id }}`
+    - **Source ID Variable:** `{{ admin_group_source_id }}`
         <!-- This MUST match a variable in the Environments section -->
-  - **Permissions Summary:** "Full control over all resources in this solution."
-  - **CDF Capabilities:** <!-- List the required permissions for this role -->
-    - `datamodels:read,write`
-    - `transformations:read,write`
-    - `timeseries:read,write`
-    - `files:read,write`
+    - **Permissions Summary:** "Full control over all resources in this solution."
+    - **CDF Capabilities:** <!-- List the required permissions for this role -->
+        - `datamodels:read,write`
+        - `transformations:read,write`
+        - `timeseries:read,write`
+        - `files:read,write`
 - **Role:** `<REPLACE_ME: e.g., Application User>`
-  - **Source ID Variable:** `{{ user_group_source_id }}`
+    - **Source ID Variable:** `{{ user_group_source_id }}`
         <!-- This MUST match a variable in the Environments section -->
-  - **Permissions Summary:** "Read-only access to the final processed data."
-  - **CDF Capabilities:** <!-- List the required permissions for this role -->
-  - `datamodels:read`
-  - `transformations:read`
-  - `timeseries:read`
-  - `files:read`
+    - **Permissions Summary:** "Read-only access to the final processed data."
+    - **CDF Capabilities:** <!-- List the required permissions for this role -->
+    - `datamodels:read`
+    - `transformations:read`
+    - `timeseries:read`
+    - `files:read`
 
 ______________________________________________________________________
 
@@ -167,21 +167,21 @@ ______________________________________________________________________
 <!-- Specify external models to import for reuse. This allows referencing objects from other spaces/models, enabling modular designs. Example: Import Cognite Core for standard assets. -->
 
 - **Import from Space:** `<REPLACE_ME: e.g., cdf_cdm>`
-  - **Models to Import:** `<REPLACE_ME: e.g., CogniteAsset v1, CogniteEvent v1>`
+    - **Models to Import:** `<REPLACE_ME: e.g., CogniteAsset v1, CogniteEvent v1>`
 
 ## 7. Observability & SLAs
 
 - **Owner:** `<REPLACE_ME: team_or_person>`
 - **SLA:**
-  - **freshness_minutes:** `<REPLACE_ME: e.g., 60>`
-  - **max_error_rate_pct:** `<REPLACE_ME: e.g., 1>`
+    - **freshness_minutes:** `<REPLACE_ME: e.g., 60>`
+    - **max_error_rate_pct:** `<REPLACE_ME: e.g., 1>`
 - **Alerts:**
-  - **channel:** `<REPLACE_ME: e.g., slack://#data-alerts>`
-  - **escalation:** `<REPLACE_ME: e.g., pagerduty_service>`
+    - **channel:** `<REPLACE_ME: e.g., slack://#data-alerts>`
+    - **escalation:** `<REPLACE_ME: e.g., pagerduty_service>`
 
 ## 8. ID Macros & Conventions
 
 - **Module Macro:** Use `{{ moduleId }}` as a prefix in external IDs.
 - **Examples:**
-  - `{{ moduleId }}:dm:project_model:v1`
-  - `{{ moduleId }}:view:work_order:v1`
+    - `{{ moduleId }}:dm:project_model:v1`
+    - `{{ moduleId }}:view:work_order:v1`

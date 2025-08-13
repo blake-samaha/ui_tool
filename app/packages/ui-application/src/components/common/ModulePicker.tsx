@@ -20,14 +20,24 @@ export function ModulePicker({ onPick }: { onPick: (module: ModuleRef | null) =>
       setError(null);
       if (!settings.projectRoot) { setModules([]); return; }
       try {
+        // Ensure the file bridge is scoped to the selected project root
+        try { await client.setRoot(settings.projectRoot); } catch {}
         const base = 'project_templates/modules';
+        // Ensure the modules directory exists to avoid 404 list calls on fresh repos
+        try { await client.mkdirp(base); } catch {}
         const list = await client.list(base);
         const dirs = list.filter((i) => i.type === 'dir');
         const out: ModuleRef[] = dirs.map((d) => ({ moduleId: d.name, path: `${base}/${d.name}` }));
         setModules(out);
       } catch (e: any) {
-        setError(String(e?.message ?? e));
-        setModules([]);
+        // Treat missing directory as empty state; surface other errors
+        const msg = String(e?.message ?? e);
+        if (/not found/i.test(msg) || /404/.test(msg)) {
+          setModules([]);
+        } else {
+          setError(msg);
+          setModules([]);
+        }
       }
     })();
   }, [settings.projectRoot, client]);

@@ -4,6 +4,12 @@ import { useForm, FormProvider, useFormContext, useFieldArray } from 'react-hook
 import { zodResolver } from '@hookform/resolvers/zod';
 import type { z } from 'zod';
 
+type VisibleWhen = {
+    path: string; // supports '../' to go up, '$' prefix for absolute
+    equals?: string | number | boolean;
+    in?: Array<string | number | boolean>;
+};
+
 export type UIControlField = {
     kind: 'text' | 'textarea' | 'select' | 'checkbox' | 'number';
     id: string;
@@ -11,6 +17,7 @@ export type UIControlField = {
     options?: Array<{ value: string; label: string }>;
     help?: string; // tooltip/help text describing the field and example usage
     placeholder?: string; // optional placeholder for inputs
+    visibleWhen?: VisibleWhen | VisibleWhen[];
 };
 
 export type UIGroupField = {
@@ -18,6 +25,7 @@ export type UIGroupField = {
     label?: string;
     path?: string;
     fields: UISchemaField[];
+    visibleWhen?: VisibleWhen | VisibleWhen[];
 };
 
 export type UIArrayField = {
@@ -32,6 +40,7 @@ export type UIArrayField = {
     columns?: string[]; // optional subset of item.fields ids to show as columns in table mode
     pageSize?: number; // optional pagination size for table mode
     actions?: Array<{ label: string; hrefTemplate: string; target?: '_blank' | '_self' }>;
+    visibleWhen?: VisibleWhen | VisibleWhen[];
 };
 
 export type UIArrayStringsField = {
@@ -40,6 +49,7 @@ export type UIArrayStringsField = {
     label?: string;
     addLabel?: string;
     removeLabel?: string;
+    visibleWhen?: VisibleWhen | VisibleWhen[];
 };
 
 export type UISchemaField = UIControlField | UIGroupField | UIArrayField | UIArrayStringsField;
@@ -50,19 +60,53 @@ function joinPath(base: string | undefined, id: string): string {
     return base ? `${base}.${id}` : id;
 }
 
+function resolvePath(basePath: string | undefined, relPath: string): string {
+    if (!relPath) return basePath || '';
+    if (relPath.startsWith('$')) return relPath.slice(1);
+    if (!basePath) return relPath.replace(/^\.\//, '');
+    let current = basePath.split('.');
+    let rel = relPath;
+    while (rel.startsWith('../')) {
+        rel = rel.slice(3);
+        current.pop();
+    }
+    if (rel.startsWith('./')) rel = rel.slice(2);
+    return rel ? `${current.join('.')}.${rel}` : current.join('.');
+}
+
+function useIsVisible(field: { visibleWhen?: VisibleWhen | VisibleWhen[] }, basePath?: string): boolean {
+    const methods = useFormContext();
+    const rules: VisibleWhen[] = Array.isArray(field.visibleWhen)
+        ? field.visibleWhen
+        : field.visibleWhen
+        ? [field.visibleWhen]
+        : [];
+    if (rules.length === 0) return true;
+    return rules.every((rule) => {
+        const watchPath = resolvePath(basePath, rule.path);
+        const value = methods.watch(watchPath as any);
+        if (rule.in) return rule.in.includes(value as any);
+        if (Object.prototype.hasOwnProperty.call(rule, 'equals')) return value === rule.equals;
+        return Boolean(value);
+    });
+}
+
 function ControlField({ field, basePath }: { field: UIControlField; basePath?: string }) {
     const methods = useFormContext();
     const name = joinPath(basePath, field.id);
     const fieldState = methods.getFieldState(name as any, methods.formState);
+    const visible = useIsVisible(field, basePath);
+    if (!visible) return null;
     return (
         <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium flex items-center gap-2" htmlFor={name}>
+            <label className="text-sm font-medium flex items-center gap-2 text-slate-900" htmlFor={name}>
                 <span>{field.label}</span>
                 {field.help && (
                     <InfoTooltip
                         definition={field.help}
                         example={field.placeholder}
                         label={`Help: ${field.label}`}
+                        className="text-slate-600"
                     />
                 )}
             </label>
@@ -97,6 +141,8 @@ function ControlField({ field, basePath }: { field: UIControlField; basePath?: s
 
 function GroupField({ field, basePath }: { field: UIGroupField; basePath?: string }) {
     const newBase = field.path ? joinPath(basePath, field.path) : basePath;
+    const visible = useIsVisible(field, basePath);
+    if (!visible) return null;
     return (
         <div className="space-y-2">
             {field.label && <div className="font-medium">{field.label}</div>}
@@ -111,6 +157,8 @@ function ArrayField({ field, basePath }: { field: UIArrayField; basePath?: strin
     const methods = useFormContext();
     const path = joinPath(basePath, field.path);
     const fa = useFieldArray({ control: methods.control, name: path as any });
+    const visible = useIsVisible(field, basePath);
+    if (!visible) return null;
     if (field.render === 'table') {
         return <TableArrayField field={field} basePath={basePath} />;
     }
@@ -140,6 +188,8 @@ function ArrayOfStringsField({ field, basePath }: { field: UIArrayStringsField; 
     const methods = useFormContext();
     const path = joinPath(basePath, field.path);
     const fa = useFieldArray({ control: methods.control, name: path as any });
+    const visible = useIsVisible(field, basePath);
+    if (!visible) return null;
     return (
         <div className="space-y-2">
             {field.label && <div className="font-medium">{field.label}</div>}

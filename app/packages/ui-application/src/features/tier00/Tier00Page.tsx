@@ -10,7 +10,7 @@ import { tier00Paths } from '../../utils/paths.js';
 export function Tier00Page() {
     const ctx = React.useContext(ProjectContext);
     if (!ctx) return null;
-    const { settings } = ctx;
+    const { settings, setSettings } = ctx;
     const [yaml, setYaml] = React.useState('');
     const [formKey, setFormKey] = React.useState(0);
     const [defaults, setDefaults] = React.useState<any>({ schemaVersion: 1, environments: [{ name: '', cdf_cluster: '', cdf_region: '' }] });
@@ -45,9 +45,25 @@ export function Tier00Page() {
         })();
     }, [settings.projectRoot, client]);
 
+    async function ensureRepoInitialized(_root: string) {
+        const base = `project_templates`;
+        await client.mkdirp(base);
+        await client.mkdirp(`${base}/ui-state`);
+        await client.mkdirp(`${base}/modules`);
+    }
+
     async function handleSave(data: any, writeYaml = false) {
-        if (!settings.projectRoot) return alert('Select a project root in settings');
-        const { yaml: yamlPath, uiState } = tier00Paths(settings.projectRoot);
+        const effectiveRoot = (data?.repositoryRoot && String(data.repositoryRoot).trim().length > 0)
+            ? String(data.repositoryRoot).trim()
+            : settings.projectRoot;
+        if (!effectiveRoot) return alert('Select a repository root to continue');
+        // If user provided a new root in the first step, persist and sync bridge root
+        if (effectiveRoot !== settings.projectRoot) {
+            setSettings({ ...settings, projectRoot: effectiveRoot });
+            try { await client.setRoot(effectiveRoot); } catch {}
+        }
+        await ensureRepoInitialized(effectiveRoot);
+        const { yaml: yamlPath, uiState } = tier00Paths(effectiveRoot);
         const yamlText = emitYaml(data, { indent: 2 });
         // Ensure dirs
         const uiDir = uiState.slice(0, uiState.lastIndexOf('/'));
@@ -65,9 +81,10 @@ export function Tier00Page() {
     return (
         <div className="space-y-4">
             <WizardShell
+                key={formKey}
                 steps={steps}
                 initialData={defaults}
-                onChange={(d: any) => setDefaults(d)}
+                onChange={() => { /* ignore live changes to avoid feedback loop */ }}
                 onSaveStep={(d) => handleSave(d, false)}
                 onFinish={(d) => handleSave(d, true)}
             />

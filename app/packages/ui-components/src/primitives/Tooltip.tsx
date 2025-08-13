@@ -31,12 +31,11 @@ export function InfoTooltip({ definition, example, className = '', label = 'Help
                     viewBox="0 0 20 20"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
-                    className="w-4 h-4"
+                    className="w-5 h-5"
                     aria-hidden="true"
                 >
-                    <circle cx="10" cy="10" r="8" className="stroke-current" strokeWidth="1.5" />
-                    <path d="M10 8.5v5" className="stroke-current" strokeWidth="1.5" strokeLinecap="round" />
-                    <circle cx="10" cy="6.5" r="1" className="fill-current" />
+                    <circle cx="10" cy="10" r="8" className="stroke-current" strokeWidth="1.4" />
+                    <text x="10" y="10" textAnchor="middle" dominantBaseline="central" fontSize="12" fontWeight="700" fill="currentColor">?</text>
                 </svg>
             </button>
             {open && (

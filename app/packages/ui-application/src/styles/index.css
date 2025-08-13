@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Basic markdown dark theme tweaks inside the viewer */
+.prose-dark :where(h1,h2,h3,h4){
+  @apply text-slate-100;
+}
+.prose-dark :where(p,li,ol,ul,blockquote,code){
+  @apply text-slate-200;
+}
+.prose-dark a{ @apply text-sky-400 underline; }
+.prose-dark code{ @apply bg-slate-800 px-1 py-0.5 rounded text-amber-300; }
+.prose-dark pre{ @apply bg-slate-800 rounded p-3 overflow-auto; }
+
 /* App base theming */
 html, body, #root {
     height: 100%;

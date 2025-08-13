@@ -27,6 +27,17 @@ A local-first, schema-driven UI for authoring requirements templates for Cognite
 - `packages/ui-components`: Owned UI primitives and form controls
 - `packages/file-bridge-client`: Local filesystem bridge client (scoped to `project_templates/**`)
 
+## Quickstart
+
+1. Connect your repository
+    - Pick a local repo root and verify the file‑bridge status (header chip).
+2. Initialize templates
+    - Create `project_templates/` with deterministic structure for YAML and UI‑state (done automatically on first run).
+3. Complete the wizard
+    - Fill Tier 00 → Tier 01 → Tier XX with guided, validated fields.
+4. Export and review
+    - Review diffs and export YAML + UI‑state JSON into your repo. Iterate by updating inputs → regenerating YAML/JSON → redeploying with Toolkit.
+
 ## Visuals
 
 ### End-to-end workflow (where the UI fits)
@@ -173,4 +184,3 @@ project_templates/
 
 - Product and architecture plan: `requirements/requirements_doc.md`
 - Template schemas (JSON + examples): `schema/`
-

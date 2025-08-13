@@ -25,10 +25,6 @@ export function WizardShell({
   const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
-    onChange(data);
-  }, [data, onChange]);
-
-  React.useEffect(() => {
     setData(initialData);
   }, [initialData]);
 
@@ -48,6 +44,7 @@ export function WizardShell({
       setError(res.message);
       return;
     }
+    // If the first step captures repository root, sync it to settings via URL param for Tier00 page to consume
     setSaving(true);
     try {
       await onSaveStep(data);
@@ -98,7 +95,11 @@ export function WizardShell({
               uiSchema={step.uiSchema}
               defaultValues={data}
               onSubmit={(partial) => setData({ ...data, ...partial })}
-              onChange={(partial) => setData((prev: any) => ({ ...prev, ...partial }))}
+              onChange={(value) => {
+                // Keep local form state in sync and notify parent without creating a feedback loop
+                setData(value as any);
+                onChange(value);
+              }}
               hideSubmit
             />
           )}

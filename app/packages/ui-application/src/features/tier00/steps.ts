@@ -1,9 +1,21 @@
 import type { WizardStep } from '../../components/wizard/types.js';
 import type { UISchema } from '@docs-as-code/form-renderer';
 
-const step = (id: string, title: string, uiSchema: UISchema, help?: string): WizardStep => ({ id, title, uiSchema, help });
+const step = (id: string, title: string, uiSchema: UISchema, help?: string, validate?: WizardStep['validate']): WizardStep => ({ id, title, uiSchema, help, validate });
 
 export const tier00Steps: WizardStep[] = [
+  // New first step: repository selection and auto-init
+  step(
+    'repo-setup',
+    'Repository',
+    {
+      fields: [
+        { kind: 'text', id: 'repositoryRoot', label: 'Repository root', placeholder: '/abs/path/to/repository', help: 'Pick a local repository using the project selector in the header (Browse…), or paste the absolute path here.' }
+      ]
+    },
+    'Select a local repository to work in. The app will create missing folders under project_templates when you continue.',
+    (data) => (data?.repositoryRoot && String(data.repositoryRoot).trim().length > 0 ? { ok: true } : { ok: false, message: 'Select a repository root to continue.' })
+  ),
   step('project-overview', 'Project Overview', {
     fields: [
       { kind: 'text', id: 'moduleId', label: 'Module ID', placeholder: 'e.g., well_performance', help: 'Snake_case identifier for the module. Used as a prefix in external IDs. Pattern: ^[a-z0-9]+(?:_[a-z0-9]+)*$' },
@@ -18,7 +30,26 @@ export const tier00Steps: WizardStep[] = [
         { kind: 'text', id: 'cdf_region', label: 'cdf_region', placeholder: 'e.g., eu-west-1' },
         { kind: 'text', id: 'idp_tenant_id', label: 'idp_tenant_id', placeholder: 'UUID', help: 'Identity provider tenant ID (UUID).' },
         { kind: 'text', id: 'admin_group_source_id', label: 'admin_group_source_id', placeholder: 'UUID', help: 'IdP group source ID for admin role.' },
-        { kind: 'text', id: 'user_group_source_id', label: 'user_group_source_id', placeholder: 'UUID', help: 'IdP group source ID for user role.' }
+        { kind: 'text', id: 'user_group_source_id', label: 'user_group_source_id', placeholder: 'UUID', help: 'IdP group source ID for user role.' },
+        { kind: 'group', label: 'Authentication', path: 'authentication', fields: [
+          { kind: 'select', id: 'method', label: 'Method', help: 'How the UI/Toolkit authenticates to CDF for this environment.', options: [
+            { value: '', label: '' },
+            { value: 'client_credentials', label: 'Client credentials' },
+            { value: 'device_code', label: 'Device code (interactive)' },
+            { value: 'pkce', label: 'PKCE (public client)' },
+            { value: 'token', label: 'Bearer token (testing only)' }
+          ]},
+          { kind: 'text', id: 'authority', label: 'Authority', placeholder: 'https://login.microsoftonline.com/{tenantId}', help: 'OIDC/OAuth2 issuer (e.g., Azure AD). Prefer authority over hardcoding tokenUrl.' },
+          { kind: 'text', id: 'tenantId', label: 'Tenant ID', placeholder: 'GUID', help: 'Identity provider tenant/realm ID.' },
+          { kind: 'text', id: 'tokenUrl', label: 'Token URL', placeholder: 'https://.../oauth2/v2.0/token', help: 'Direct token endpoint; optional when authority is set.' },
+          { kind: 'text', id: 'audience', label: 'Audience', placeholder: 'cognite', help: 'Audience/resource (when required by IdP).' },
+          { kind: 'text', id: 'clientId', label: 'Client ID', help: 'Application/client ID registered in IdP.', visibleWhen: { path: 'method', in: ['client_credentials', 'pkce'] } },
+          { kind: 'text', id: 'clientSecret', label: 'Client Secret', help: 'Secret for confidential client credentials. Store securely; do not commit.', visibleWhen: { path: 'method', equals: 'client_credentials' } },
+          { kind: 'text', id: 'certificateThumbprint', label: 'Certificate Thumbprint', help: 'Optional: if using certificate-credential flows.', visibleWhen: { path: 'method', equals: 'client_credentials' } },
+          { kind: 'arrayOfStrings', path: 'scopes', label: 'Scopes', addLabel: 'Add scope', removeLabel: 'Remove scope', visibleWhen: [ { path: 'method', in: ['device_code', 'pkce'] } ] },
+          { kind: 'text', id: 'redirectUri', label: 'Redirect URI', help: 'PKCE only: redirect URI registered for the public client.', visibleWhen: { path: 'method', equals: 'pkce' } },
+          { kind: 'text', id: 'token', label: 'Bearer Token', help: 'Pre-issued token for testing only; avoid in production.', visibleWhen: { path: 'method', equals: 'token' } }
+        ]}
       ]}}
     ]
   }),

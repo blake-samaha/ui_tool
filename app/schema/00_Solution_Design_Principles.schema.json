@@ -157,7 +157,8 @@
                 },
                 "idp_tenant_id": { "type": "string" },
                 "admin_group_source_id": { "type": "string" },
-                "user_group_source_id": { "type": "string" }
+                "user_group_source_id": { "type": "string" },
+                "authentication": { "$ref": "#/$defs/authentication" }
             }
         },
         "rawSource": {
@@ -254,6 +255,50 @@
                     "type": "array",
                     "minItems": 1,
                     "items": { "type": "string" }
+                }
+            }
+        },
+        "authentication": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["method"],
+            "properties": {
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "client_credentials",
+                        "device_code",
+                        "pkce",
+                        "token"
+                    ]
+                },
+                "authority": {
+                    "type": "string",
+                    "description": "OIDC/OAuth2 authority/issuer. Example: https://login.microsoftonline.com/{tenantId}"
+                },
+                "tenantId": {
+                    "type": "string",
+                    "description": "Identity provider tenant/realm ID (e.g., Azure AD tenant GUID)."
+                },
+                "tokenUrl": {
+                    "type": "string",
+                    "description": "Direct token endpoint URL if not using authority discovery."
+                },
+                "audience": {
+                    "type": "string",
+                    "description": "Audience/resource identifier for client credentials, when required."
+                },
+                "clientId": { "type": "string" },
+                "clientSecret": { "type": "string" },
+                "certificateThumbprint": { "type": "string" },
+                "scopes": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                },
+                "redirectUri": { "type": "string" },
+                "token": {
+                    "type": "string",
+                    "description": "Pre-issued bearer token (use only for testing)."
                 }
             }
         }

@@ -6,13 +6,28 @@ export const SchemaVersionedZ = z.object({
 export type SchemaVersioned = z.infer<typeof SchemaVersionedZ>;
 
 // Tier 00 — Solution Design Principles
+const AuthenticationZ = z.object({
+    method: z.enum(['client_credentials', 'device_code', 'pkce', 'token']),
+    authority: z.string().optional(),
+    tenantId: z.string().optional(),
+    tokenUrl: z.string().optional(),
+    audience: z.string().optional(),
+    clientId: z.string().optional(),
+    clientSecret: z.string().optional(),
+    certificateThumbprint: z.string().optional(),
+    scopes: z.array(z.string()).optional(),
+    redirectUri: z.string().optional(),
+    token: z.string().optional()
+});
+
 const EnvironmentZ = z.object({
     name: z.string().min(1),
     cdf_cluster: z.string().min(1),
     cdf_region: z.string().min(1),
     idp_tenant_id: z.string().optional(),
     admin_group_source_id: z.string().optional(),
-    user_group_source_id: z.string().optional()
+    user_group_source_id: z.string().optional(),
+    authentication: AuthenticationZ.optional()
 });
 
 const RawSourceZ = z.object({

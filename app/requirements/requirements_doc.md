@@ -427,16 +427,64 @@ Wizard extensions in Phase 3
   - App icon: simple monogram aligned with Cognite Docs styling; dark/light
     variants for OS themes.
 
+### 5.3 Landing page standards (Home)
+
+- Single primary CTA in the hero: “Start wizard”. Avoid duplicate links already present in the header.
+- Keep external links (Templates, Official Cognite Documentation) in the top bar only; do not repeat them in the hero.
+- Show status chips compactly in the hero/header:
+  - File‑bridge status (Connected/Error/...)
+  - Project root pill (selected path or “No project selected”), with menu for Browse and Recent
+- Quickstart is the sole flow section on the page:
+  - Use a horizontal 4‑step timeline with numbered dots and a subtle connector line
+  - Copy:
+    1) Install and select your repo — Place the app anywhere. In the header, select your local repo root.
+    2) Capture connection and model details — Use the wizard to enter CDF context and define objects/relationships.
+    3) Update your CDF project with AI + Docs — Use the generated YAML/JSON with the AI assistant and Cognite Docs in Cursor to create or update targeted areas.
+    4) Deploy to CDF — Apply changes with Cognite Toolkit. Iterate: refine → regenerate → redeploy.
+- Remove redundant “How it works” content if Quickstart is present.
+- Accessibility: respect `prefers-reduced-motion`; when enabled, pause animated backgrounds and keep a static gradient.
+- Optional conditional blocks:
+  - “Continue where you left off” card when prior UI‑state exists
+  - “Recent outputs” (compact list of last generated YAML/JSON) — optional for later
+
+### 5.4 Templates page and Markdown editor
+
+- Templates list: provide links for 00/01/XX markdown templates (reference copies bundled with the app).
+- Viewer behavior (default):
+  - Render markdown with a dark, IDE‑like theme.
+  - YAML front matter (between leading `---` blocks) is hidden by default to focus on the narrative; a toggle shows/hides metadata.
+- Edit mode:
+  - Switch to an in‑app editor (dark textarea, mono font) to modify the template text.
+  - Saving options:
+    - "Save as…" uses the browser download picker (no risk of overwriting source templates).
+    - "Save to repository" writes to `project_templates/docs/<timestamp>_<name>.md` to avoid collisions.
+  - Default filename must be neutral (e.g., `my_template.md`), not the canonical template name.
+  - Cancel returns to view mode without saving.
+- Goal: treat templates as working docs and a checklist; the wizard remains the source for structured YAML/JSON.
+
+### 5.5 Field help tooltips
+
+- Use a circular info button with a visible “?” glyph (approx 20×20 px) next to labels.
+- Maintain accessible label (e.g., `aria-label="Help: <field>"`).
+- Color guidance: icon uses slate tones by default; keep contrast against light inputs and dark backgrounds.
+- Tooltip shows a brief definition and optional example; open on hover/focus; dismiss on blur/mouseleave.
+
+### 5.6 Animated background
+
+- Global, subtle animated background (birds) behind content with a soft white overlay for readability.
+- Respect `prefers-reduced-motion`; when enabled, do not initialize animation.
+- Keep motion subtle; avoid competing with form content.
+
 ## 6. Workflow and Repository Structure
 
-### 6.1 High-level system workflow
+### 6.1 High-level system workflow (Quickstart)
 
 1. Human Architect: edits YAML requirements in a Git repo.
-2. UI Application: loads YAML requirements and schemas, shows a structured form.
+2. UI Application (Cognite Docs-as-Code): loads YAML requirements and schemas, shows a structured form.
    - Can import from `project_templates/` (YAML) and/or
      `project_templates/ui-state/` (JSON) to prefill fields.
 3. Human Architect: reviews and fixes data with real-time validation.
-4. UI Application: generates structured data (YAML/JSON) on approval.
+4. UI Application: generates structured data (YAML/JSON) on approval; repeat the loop by updating inputs, regenerating YAML/JSON, and redeploying with Toolkit.
    - Writes back to `project_templates/` and `project_templates/ui-state/`
      for round-trip edits.
 5. AI-assisted workflow (outside the UI): architects/engineers use LLMs to
@@ -472,6 +520,9 @@ Toolkit conventions.
 |       |       `-- xx/
 |       |           |-- well.json
 |       |           `-- compressor.json
+|       `-- docs/                   # Markdown copies saved from the Templates editor
+|           |-- 1712763212345_my_template.md
+|           `-- ...
 |       `-- another_module/
 |
 |-- cdf-modules/
