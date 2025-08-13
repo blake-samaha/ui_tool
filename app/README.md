@@ -115,11 +115,11 @@ flowchart LR
     - Output: `project_templates/00_Solution_Design_Principles.yaml`
     - UI-state: `project_templates/ui-state/00_solution_design.json`
 - Tier 01 — Conceptual Model (per module)
-    - Output: `project_templates/modules/<module>/01_Conceptual_Model.yaml`
-    - UI-state: `project_templates/modules/<module>/ui-state/01_conceptual_model.json`
+    - Output: `project_templates/projects/<project>/modules/<module>/01_Conceptual_Model.yaml`
+    - UI-state: `project_templates/projects/<project>/modules/<module>/ui-state/01_conceptual_model.json`
 - Tier XX — Object Specification (per object)
-    - Output: `project_templates/modules/<module>/XX_Object_Specs/<object>.yaml`
-    - UI-state: `project_templates/modules/<module>/ui-state/xx/<object>.json`
+    - Output: `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/<object>.yaml`
+    - UI-state: `project_templates/projects/<project>/modules/<module>/ui-state/xx/<object>.json`
 
 Example layout
 

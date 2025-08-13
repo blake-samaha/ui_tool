@@ -4,7 +4,7 @@ import type { UISchema } from '@docs-as-code/form-renderer';
 const step = (id: string, title: string, uiSchema: UISchema, help?: string, validate?: WizardStep['validate']): WizardStep => ({ id, title, uiSchema, help, validate });
 
 export const tier00Steps: WizardStep[] = [
-  // New first step: repository selection and auto-init
+  // Step 1: repository selection
   step(
     'repo-setup',
     'Repository',
@@ -16,11 +16,32 @@ export const tier00Steps: WizardStep[] = [
     'Select a local repository to work in. The app will create missing folders under project_templates when you continue.',
     (data) => (data?.repositoryRoot && String(data.repositoryRoot).trim().length > 0 ? { ok: true } : { ok: false, message: 'Select a repository root to continue.' })
   ),
-  step('project-overview', 'Project Overview', {
+  // Step 2: Organization projects
+  step('organization-projects', 'Organization Projects', {
     fields: [
-      { kind: 'text', id: 'moduleId', label: 'Module ID', placeholder: 'e.g., well_performance', help: 'Snake_case identifier for the module. Used as a prefix in external IDs. Pattern: ^[a-z0-9]+(?:_[a-z0-9]+)*$' },
-      { kind: 'text', id: 'projectId', label: 'Project ID', placeholder: 'e.g., acme_upstream_2025', help: 'Optional human/project identifier for documentation.' }
+      { kind: 'array', path: 'projects', label: 'Projects', addLabel: 'Add project', removeLabel: 'Remove project', item: { kind: 'group', fields: [
+        { kind: 'text', id: 'projectId', label: 'Project ID', placeholder: 'e.g., acme_upstream_2025', help: 'Folder name under project_templates/projects/<projectId>' },
+        { kind: 'group', label: 'Space', path: 'space', fields: [ { kind: 'text', id: 'externalId', label: 'Space External ID', placeholder: 'e.g., sp_my_project_space' }, { kind: 'text', id: 'description', label: 'Description' } ] },
+        { kind: 'array', path: 'environments', label: 'Environments', addLabel: 'Add env', removeLabel: 'Remove env', item: { kind: 'group', fields: [
+          { kind: 'text', id: 'name', label: 'Name', placeholder: 'dev, prod' },
+          { kind: 'text', id: 'cdf_cluster', label: 'cdf_cluster' },
+          { kind: 'text', id: 'cdf_region', label: 'cdf_region' },
+          { kind: 'text', id: 'idp_tenant_id', label: 'idp_tenant_id' },
+          { kind: 'text', id: 'admin_group_source_id', label: 'admin_group_source_id' },
+          { kind: 'text', id: 'user_group_source_id', label: 'user_group_source_id' }
+        ] } },
+        { kind: 'array', path: 'rawSources', label: 'RAW Sources', addLabel: 'Add source', removeLabel: 'Remove source', item: { kind: 'group', fields: [ { kind: 'text', id: 'sourceSystem', label: 'Source System' }, { kind: 'text', id: 'database', label: 'RAW Database' }, { kind: 'arrayOfStrings', path: 'tables', label: 'Tables', addLabel: 'Add', removeLabel: 'Remove' }, { kind: 'textarea', id: 'description', label: 'Description' } ] } },
+        { kind: 'group', path: 'toolkit', fields: [ { kind: 'select', id: 'deployStrategy', label: 'Deploy Strategy', options: [ { value: '', label: '' }, { value: 'upsert', label: 'upsert' }, { value: 'replace', label: 'replace' } ] }, { kind: 'checkbox', id: 'dryRun', label: 'Dry Run' } ] },
+        { kind: 'group', path: 'promotion', fields: [ { kind: 'text', id: 'fromEnv', label: 'From Env' }, { kind: 'text', id: 'toEnv', label: 'To Env' }, { kind: 'arrayOfStrings', path: 'guardrails', label: 'Guardrails', addLabel: 'Add', removeLabel: 'Remove' } ] },
+        { kind: 'array', path: 'accessRoles', label: 'Access Roles', addLabel: 'Add', removeLabel: 'Remove', item: { kind: 'group', fields: [ { kind: 'text', id: 'name', label: 'Name' }, { kind: 'text', id: 'sourceIdVariable', label: 'Source ID Variable' }, { kind: 'textarea', id: 'permissionsSummary', label: 'Permissions' }, { kind: 'arrayOfStrings', path: 'capabilities', label: 'Capabilities', addLabel: 'Add', removeLabel: 'Remove' } ] } },
+        { kind: 'group', path: 'globalStandards', fields: [ { kind: 'text', id: 'globalNamingConvention', label: 'Naming Convention' }, { kind: 'text', id: 'timestampStandard', label: 'Timestamp Standard' }, { kind: 'text', id: 'requiredPropertyForAllObjects', label: 'Required Property' } ] },
+        { kind: 'group', path: 'coreModelInheritance', fields: [ { kind: 'group', path: 'assetView', fields: [ { kind: 'text', id: 'space', label: 'Space', placeholder: 'cdf_cdm' }, { kind: 'text', id: 'externalId', label: 'External ID', placeholder: 'CogniteAsset' }, { kind: 'text', id: 'version', label: 'Version', placeholder: 'v1' } ] }, { kind: 'group', path: 'eventView', fields: [ { kind: 'text', id: 'space', label: 'Space', placeholder: 'cdf_cdm' }, { kind: 'text', id: 'externalId', label: 'External ID', placeholder: 'CogniteEvent' }, { kind: 'text', id: 'version', label: 'Version', placeholder: 'v1' } ] } ] },
+        { kind: 'array', path: 'externalModels', label: 'External Models', addLabel: 'Add', removeLabel: 'Remove', item: { kind: 'group', fields: [ { kind: 'text', id: 'space', label: 'Space' }, { kind: 'arrayOfStrings', path: 'models', label: 'Models', addLabel: 'Add', removeLabel: 'Remove' } ] } }
+      ] } }
     ]
+  }, 'Manage multiple projects in your organization. Each project will be saved under project_templates/projects/<projectId>.', (data) => {
+    const arr = Array.isArray(data?.projects) ? data.projects : [];
+    return arr.length > 0 ? { ok: true } : { ok: false, message: 'Add at least one project.' };
   }),
   step('environments', 'Environments', {
     fields: [

@@ -7,6 +7,7 @@ import { ProjectContext } from '../../state/ProjectContext.js';
 import { FileBridgeClient } from '@docs-as-code/file-bridge-client';
 import { tier01Paths } from '../../utils/paths.js';
 import { ModulePicker, type ModuleRef } from '../../components/common/ModulePicker.js';
+import { ProjectPicker } from '../../components/common/ProjectPicker.js';
 import { JsonExplorer } from '../../components/common/JsonExplorer.js';
 
 type Tier01 = typeof Tier01ConceptualModelZ extends infer T ? T : never;
@@ -20,13 +21,15 @@ export function Tier01Page() {
     const [formKey, setFormKey] = React.useState(0);
     const [yaml, setYaml] = React.useState('');
     const [picked, setPicked] = React.useState<ModuleRef | null | undefined>(undefined);
+    const [projectId, setProjectId] = React.useState<string | null>(null);
     const [working, setWorking] = React.useState<any>(defaults);
 
     React.useEffect(() => {
         (async () => {
             const moduleId = picked?.moduleId || defaults.moduleId;
-            if (!settings.projectRoot || !moduleId) return;
-            const { yaml: yamlPath, uiState } = tier01Paths(settings.projectRoot, moduleId);
+            const proj = picked?.projectId || projectId || '';
+            if (!settings.projectRoot || !moduleId || !proj) return;
+            const { yaml: yamlPath, uiState } = tier01Paths(settings.projectRoot, proj, moduleId);
             try {
                 const raw = await client.read(uiState);
                 if (raw && raw.trim().length > 0) {
@@ -47,7 +50,7 @@ export function Tier01Page() {
                 }
             } catch {}
         })();
-    }, [settings.projectRoot, client, picked]);
+    }, [settings.projectRoot, client, picked, projectId]);
 
     React.useEffect(() => {
         setWorking(defaults);
@@ -55,16 +58,16 @@ export function Tier01Page() {
 
     async function handleSaveStep(data: any) {
         if (!settings.projectRoot) return;
-        if (!data.moduleId) return;
-        const { uiState } = tier01Paths(settings.projectRoot, data.moduleId);
+        if (!data.moduleId || !projectId) return;
+        const { uiState } = tier01Paths(settings.projectRoot, projectId, data.moduleId);
         await client.mkdirp(uiState.slice(0, uiState.lastIndexOf('/')));
         await client.write(uiState, JSON.stringify(data, null, 2) + '\n');
     }
 
     async function handleFinish(data: any) {
         if (!settings.projectRoot) return alert('Select a project root in settings');
-        if (!data.moduleId) return alert('Enter a moduleId');
-        const { yaml: yamlPath, uiState } = tier01Paths(settings.projectRoot, data.moduleId);
+        if (!data.moduleId || !projectId) return alert('Select a project and enter a moduleId');
+        const { yaml: yamlPath, uiState } = tier01Paths(settings.projectRoot, projectId, data.moduleId);
         const yamlText = emitYaml(data, { indent: 2 });
         await client.mkdirp(uiState.slice(0, uiState.lastIndexOf('/')));
         await client.mkdirp(yamlPath.slice(0, yamlPath.lastIndexOf('/')));
@@ -74,11 +77,14 @@ export function Tier01Page() {
         try { await navigator.clipboard.writeText(yamlText); } catch {}
     }
 
-    // If no module picked yet and no moduleId in defaults, show picker first
+    // Require project selection, then module selection
+    if (!projectId) {
+        return <ProjectPicker onPick={(p) => setProjectId(p || null)} />;
+    }
     if (picked === undefined || (!defaults.moduleId && !picked)) {
         return (
             <div className="space-y-4">
-                <ModulePicker onPick={(m) => {
+                <ModulePicker projectId={projectId} onPick={(m) => {
                     setPicked(m);
                     if (m) setDefaults((d: any) => ({ ...d, moduleId: m.moduleId }));
                 }} />

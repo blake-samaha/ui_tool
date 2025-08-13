@@ -6,8 +6,9 @@ export function tier00Paths(_root: string) {
     };
 }
 
-export function tier01Paths(_root: string, moduleId: string) {
-    const base = `project_templates/modules/${moduleId}`;
+// New project-scoped paths for Tier 01
+export function tier01Paths(_root: string, projectId: string, moduleId: string) {
+    const base = `project_templates/projects/${projectId}/modules/${moduleId}`;
     return {
         yaml: `${base}/01_Conceptual_Model.yaml`,
         uiState: `${base}/ui-state/01_conceptual_model.json`,
@@ -15,8 +16,9 @@ export function tier01Paths(_root: string, moduleId: string) {
     };
 }
 
-export function tierXXPaths(_root: string, moduleId: string, objectId: string) {
-    const base = `project_templates/modules/${moduleId}`;
+// New project-scoped paths for Tier XX
+export function tierXXPaths(_root: string, projectId: string, moduleId: string, objectId: string) {
+    const base = `project_templates/projects/${projectId}/modules/${moduleId}`;
     return {
         yaml: `${base}/XX_Object_Specs/${objectId}.yaml`,
         uiState: `${base}/ui-state/xx/${objectId}.json`,

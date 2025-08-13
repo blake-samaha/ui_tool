@@ -9,6 +9,7 @@ import { Home } from '../views/Home.js';
 import { Quickstart } from '../views/Quickstart.js';
 import { VantaBackground } from '../components/common/VantaBackground.js';
 import { Templates } from '../views/Templates.js';
+import { Glossary } from '../views/Glossary.js';
 import { TemplateViewer } from '../views/TemplateViewer.js';
 
 function Header() {
@@ -77,6 +78,13 @@ function Header() {
                         aria-label="Open templates"
                     >
                         Templates
+                    </Link>
+                    <Link
+                        to="/glossary"
+                        className="rounded-md px-3 py-1.5 text-sm font-medium bg-white text-blue-700 ring-1 ring-blue-300 hover:bg-blue-50"
+                        aria-label="Open glossary"
+                    >
+                        Glossary
                     </Link>
                     <Link
                         to="/quickstart"
@@ -211,6 +219,7 @@ const router = createBrowserRouter([
             { path: 'tier00', element: <Tier00Page /> },
             { path: 'tier01', element: <Tier01Page /> },
             { path: 'tierXX', element: <TierXXPage /> },
+            { path: 'glossary', element: <Glossary /> },
             { path: '*', element: <Home /> }
         ]
     }

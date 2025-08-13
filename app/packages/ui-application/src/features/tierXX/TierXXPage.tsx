@@ -5,12 +5,13 @@ import { TierXXObjectSpecificationZ } from '@docs-as-code/shared-types';
 import { tierXXSteps } from './steps.js';
 import { ProjectContext } from '../../state/ProjectContext.js';
 import { FileBridgeClient } from '@docs-as-code/file-bridge-client';
-import { tierXXPaths } from '../../utils/paths.js';
+import { tierXXPaths, tier01Paths, tier00Paths } from '../../utils/paths.js';
 import { ModulePicker, type ModuleRef } from '../../components/common/ModulePicker.js';
 import { ObjectPicker, type ObjectRef } from '../../components/common/ObjectPicker.js';
+import { ProjectPicker } from '../../components/common/ProjectPicker.js';
 import { useSearchParams } from 'react-router-dom';
 import { JsonExplorer } from '../../components/common/JsonExplorer.js';
-import { tier00Paths, tier01Paths } from '../../utils/paths.js';
+ 
 
 export function TierXXPage() {
     const ctx = React.useContext(ProjectContext);
@@ -22,19 +23,22 @@ export function TierXXPage() {
     const [yaml, setYaml] = React.useState('');
     const [pickedModule, setPickedModule] = React.useState<ModuleRef | null | undefined>(undefined);
     const [pickedObject, setPickedObject] = React.useState<ObjectRef | null | undefined>(undefined);
+    const [projectId, setProjectId] = React.useState<string | null>(null);
     const [params] = useSearchParams();
     const [inherited, setInherited] = React.useState<{ tier00?: any; tier01?: any }>({});
 
     // Optional init from URL
     React.useEffect(() => {
+        const p = params.get('projectId');
         const m = params.get('moduleId');
         const o = params.get('objectId');
-        if (m) {
-            setPickedModule({ moduleId: m, path: `project_templates/modules/${m}` });
+        if (p) setProjectId(p);
+        if (p && m) {
+            setPickedModule({ projectId: p, moduleId: m, path: `project_templates/projects/${p}/modules/${m}` });
             setDefaults((d: any) => ({ ...d, moduleId: m }));
         }
-        if (m && o) {
-            setPickedObject({ moduleId: m, objectId: o, yamlPath: `project_templates/modules/${m}/XX_Object_Specs/${o}.yaml`, uiStatePath: `project_templates/modules/${m}/ui-state/xx/${o}.json` });
+        if (p && m && o) {
+            setPickedObject({ projectId: p, moduleId: m, objectId: o, yamlPath: `project_templates/projects/${p}/modules/${m}/XX_Object_Specs/${o}.yaml`, uiStatePath: `project_templates/projects/${p}/modules/${m}/ui-state/xx/${o}.json` });
             setDefaults((d: any) => ({ ...d, objectId: o }));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -44,8 +48,9 @@ export function TierXXPage() {
         (async () => {
             const moduleId = pickedModule?.moduleId || defaults.moduleId;
             const objectId = pickedObject?.objectId || defaults.objectId;
-            if (!settings.projectRoot || !moduleId || !objectId) return;
-            const { yaml: yamlPath, uiState } = tierXXPaths(settings.projectRoot, moduleId, objectId);
+            const proj = pickedModule?.projectId || projectId || '';
+            if (!settings.projectRoot || !moduleId || !objectId || !proj) return;
+            const { yaml: yamlPath, uiState } = tierXXPaths(settings.projectRoot, proj, moduleId, objectId);
             try {
                 const raw = await client.read(uiState);
                 if (raw && raw.trim().length > 0) {
@@ -62,16 +67,17 @@ export function TierXXPage() {
                 }
             } catch {}
         })();
-    }, [settings.projectRoot, client, pickedModule, pickedObject]);
+    }, [settings.projectRoot, client, pickedModule, pickedObject, projectId]);
 
     // load inherited context once module is known
     React.useEffect(() => {
         (async () => {
             const moduleId = pickedModule?.moduleId || defaults.moduleId;
-            if (!settings.projectRoot || !moduleId) return;
+            const proj = pickedModule?.projectId || projectId || '';
+            if (!settings.projectRoot || !moduleId || !proj) return;
             try {
                 const t00 = tier00Paths(settings.projectRoot);
-                const t01 = tier01Paths(settings.projectRoot, moduleId);
+                const t01 = tier01Paths(settings.projectRoot, proj, moduleId);
                 const [t00json, t01json] = await Promise.all([
                     client.read(t00.uiState).catch(() => ''),
                     client.read(t01.uiState).catch(() => '')
@@ -82,20 +88,20 @@ export function TierXXPage() {
                 });
             } catch {}
         })();
-    }, [client, defaults.moduleId, pickedModule, settings.projectRoot]);
+    }, [client, defaults.moduleId, pickedModule, projectId, settings.projectRoot]);
 
     async function handleSaveStep(data: any) {
         if (!settings.projectRoot) return;
-        if (!data.moduleId || !data.objectId) return;
-        const { uiState } = tierXXPaths(settings.projectRoot, data.moduleId, data.objectId);
+        if (!data.moduleId || !data.objectId || !projectId) return;
+        const { uiState } = tierXXPaths(settings.projectRoot, projectId, data.moduleId, data.objectId);
         await client.mkdirp(uiState.slice(0, uiState.lastIndexOf('/')));
         await client.write(uiState, JSON.stringify(data, null, 2) + '\n');
     }
 
     async function handleFinish(data: any) {
         if (!settings.projectRoot) return alert('Select a project root in settings');
-        if (!data.moduleId || !data.objectId) return alert('Enter moduleId and objectId');
-        const { yaml: yamlPath, uiState } = tierXXPaths(settings.projectRoot, data.moduleId, data.objectId);
+        if (!data.moduleId || !data.objectId || !projectId) return alert('Select a project & enter moduleId and objectId');
+        const { yaml: yamlPath, uiState } = tierXXPaths(settings.projectRoot, projectId, data.moduleId, data.objectId);
         const yamlText = emitYaml(data, { indent: 2 });
         await client.mkdirp(uiState.slice(0, uiState.lastIndexOf('/')));
         await client.mkdirp(yamlPath.slice(0, yamlPath.lastIndexOf('/')));
@@ -105,11 +111,14 @@ export function TierXXPage() {
         try { await navigator.clipboard.writeText(yamlText); } catch {}
     }
 
-    // Pickers for module and object
+    // Require project, then module, then object
+    if (!projectId) {
+        return <ProjectPicker onPick={(p) => setProjectId(p || null)} />;
+    }
     if (pickedModule === undefined || (!defaults.moduleId && !pickedModule)) {
         return (
             <div className="space-y-4">
-                <ModulePicker onPick={(m) => {
+                <ModulePicker projectId={projectId} onPick={(m) => {
                     setPickedModule(m);
                     if (m) setDefaults((d: any) => ({ ...d, moduleId: m.moduleId }));
                 }} />
@@ -120,7 +129,7 @@ export function TierXXPage() {
     if (pickedObject === undefined || (!defaults.objectId && !pickedObject)) {
         return (
             <div className="space-y-4">
-                <ObjectPicker moduleId={pickedModule?.moduleId || defaults.moduleId} onPick={(o) => {
+                <ObjectPicker projectId={pickedModule!.projectId} moduleId={pickedModule?.moduleId || defaults.moduleId} onPick={(o) => {
                     setPickedObject(o);
                     if (o) setDefaults((d: any) => ({ ...d, moduleId: o.moduleId, objectId: o.objectId }));
                 }} />

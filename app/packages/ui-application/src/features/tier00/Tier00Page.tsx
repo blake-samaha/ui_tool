@@ -45,11 +45,15 @@ export function Tier00Page() {
         })();
     }, [settings.projectRoot, client]);
 
-    async function ensureRepoInitialized(_root: string) {
+    async function ensureRepoInitialized(_root: string, projects: Array<{ projectId: string }> = []) {
         const base = `project_templates`;
         await client.mkdirp(base);
         await client.mkdirp(`${base}/ui-state`);
-        await client.mkdirp(`${base}/modules`);
+        await client.mkdirp(`${base}/projects`);
+        for (const p of projects) {
+            if (!p?.projectId) continue;
+            await client.mkdirp(`${base}/projects/${p.projectId}/modules`);
+        }
     }
 
     async function handleSave(data: any, writeYaml = false) {
@@ -62,7 +66,7 @@ export function Tier00Page() {
             setSettings({ ...settings, projectRoot: effectiveRoot });
             try { await client.setRoot(effectiveRoot); } catch {}
         }
-        await ensureRepoInitialized(effectiveRoot);
+        await ensureRepoInitialized(effectiveRoot, Array.isArray(data?.projects) ? data.projects : []);
         const { yaml: yamlPath, uiState } = tier00Paths(effectiveRoot);
         const yamlText = emitYaml(data, { indent: 2 });
         // Ensure dirs
