@@ -291,6 +291,7 @@ function TableArrayField({ field, basePath }: { field: UIArrayField; basePath?: 
 
     function applyTemplate(template: string, row: any, root: any): string {
         return template
+            .replace(/\{\{\s*projectId\s*\}\}/g, String(root?.projectId ?? ''))
             .replace(/\{\{\s*moduleId\s*\}\}/g, String(root?.moduleId ?? ''))
             .replace(/\{\{\s*objectId\s*\}\}/g, String(row?.objectId ?? ''));
     }
