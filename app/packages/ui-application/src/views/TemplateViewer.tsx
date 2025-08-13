@@ -2,8 +2,10 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { Button } from '@docs-as-code/ui-components';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { ProjectContext } from '../state/ProjectContext.js';
 import { FileBridgeClient } from '@docs-as-code/file-bridge-client';
+import { generateFilename, saveFile } from '../utils/fileUtils.js';
 
 // Import markdown at build time as raw text. This works in dev and prod bundles.
 // Paths are relative to this file: packages/ui-application/src/views
@@ -44,7 +46,10 @@ export function TemplateViewer() {
   }
 
   const { front, body } = splitFrontmatter(text);
-  const rendered = marked.parse(showMeta ? text : body) as string;
+  const markedHtml = marked.parse(showMeta ? text : body) as string;
+  const rendered = DOMPurify.sanitize(markedHtml);
+
+  const isInvalidName = !fileName.trim();
 
   return (
     <div className="mx-auto max-w-5xl space-y-4">
@@ -60,18 +65,15 @@ export function TemplateViewer() {
         ) : (
           <div className="flex items-center gap-2">
             {/* Save as... (browser download picker) */}
-            <Button onClick={() => {
-              const name = (fileName || 'my_template.md').replace(/\s+/g, '_');
-              const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = /\.md$/i.test(name) ? name : `${name}.md`;
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-              URL.revokeObjectURL(url);
-              setStatus('Saved a copy via browser download.');
+            <Button disabled={isInvalidName} aria-disabled={isInvalidName} onClick={async () => {
+              setStatus(null);
+              const filename = generateFilename(fileName || 'my_template.md', ctx.settings.projectRoot);
+              const result = await saveFile(text, filename);
+              if (result.ok) {
+                setStatus(result.value.method === 'filePicker' ? 'Saved via file picker.' : 'Saved a copy via browser download.');
+              } else if (result.error.code !== 'ABORTED') {
+                setStatus(result.error.message);
+              }
             }}>Save as…</Button>
 
             {/* Optional: save to repository under project_templates/docs with timestamp to avoid overwrite */}
@@ -95,7 +97,7 @@ export function TemplateViewer() {
 
             <Button variant="ghost" className="bg-red-600 text-white hover:bg-red-700" onClick={() => { setEditing(false); setStatus(null); }}>Cancel</Button>
             <div className="ml-2 text-sm text-slate-700">Save name:</div>
-            <input value={fileName} onChange={(e) => setFileName(e.target.value)} className="rounded px-2 py-1 ring-1 ring-slate-300" />
+            <input aria-label="Save name" aria-invalid={isInvalidName} value={fileName} onChange={(e) => setFileName(e.target.value)} className="rounded px-2 py-1 ring-1 ring-slate-300" />
           </div>
         )}
       </div>

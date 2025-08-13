@@ -8,6 +8,18 @@ that powers a schema-driven, docs-as-code workflow for Cognite Data Fusion
 capture requirements in structured, human-readable form. The goal is a guided,
 validating, and repeatable flow that reduces errors and speeds delivery.
 
+## Glossary (based on Cognite documentation)
+
+- Organization: An administrative grouping that owns one or more CDF projects within a customer context. In this UI, an organization is the top-level scope that contains projects, modules, and data objects.
+- CDF Project (Project): A logical workspace in Cognite Data Fusion where configurations and data are deployed and managed. Projects are the unit you configure, build, and deploy to when running the Cognite Toolkit. See “Configure access to the CDF project” in the Toolkit usage guide [Configure, build, and deploy modules](https://docs.cognite.com/cdf/deploy/cdf_toolkit/guides/usage).
+- Module (Data Module): A self-contained bundle of configuration files that define a cohesive set of CDF resources to solve a task (for example, data pipelines, access groups, transformations). Modules are directories in the file system and should be self-contained. See [Customizing modules](https://docs.cognite.com/cdf/deploy/cdf_toolkit/guides/modules/custom).
+- Data Model (CDM): A graph-first model using spaces, views, containers, and typed edges for industrial data in CDF.
+- View: A queryable projection that defines a schema over one or more containers and can implement core views like CogniteAsset.
+- Container: A typed storage structure that holds properties and indexes.
+- Typed edge (relationship): Graph relations connecting objects, optionally typed via edge types and labels.
+- Environment: A deployment target context such as dev or prod configured per project for Toolkit usage [Configure, build, and deploy modules](https://docs.cognite.com/cdf/deploy/cdf_toolkit/guides/usage).
+- Workspace (UI): In this application, the “workspace” is the selected local repository root on disk. The UI reads/writes under <workspace>/project_templates/** using a local file bridge. It is not a CDF concept.
+
 Guiding principles:
 
 - Maintainability: choose tools and patterns that are easy to evolve.
@@ -194,46 +206,38 @@ Guiding principles:
     - Clear, compact help text per field; error messages shown inline and in a step-level summary
     - Persistent progress indicator and unsaved-changes prompts when navigating away
 
-Wizard step breakdown per tier
+Wizard phases and steps
 
-- Tier 00 — Solution Design Principles
-    1. Project Overview: `moduleId`, `projectId`
-    2. Environments: `environments[]` (all fields)
-    3. Space: `space.externalId`, `space.description`
-    4. RAW Sources: `rawSources[]`
-    5. Toolkit: `toolkit.*`
-    6. Promotion: `promotion.*`
-    7. Access Roles: `accessRoles[]`
-    8. Global Standards: `globalStandards.*`
-    9. Core Model Inheritance: `coreModelInheritance.assetView`, `coreModelInheritance.eventView`
-    10. External Models: `externalModels[]`
-    11. Observability: `observability.*`
-    12. ID Macros: `idMacros.*`
-    13. Review & Generate: summary table and YAML preview
+- Organization Projects (based on 00 — Solution Design Principles)
+    1. Organization Overview: `schemaVersion`, `projectId` (org/program identifier), glossary link
+    2. Projects: manage a list of CDF projects in the organization, each with:
+        - Environments: `environments[]`
+        - Space: `space.externalId`, `space.description`
+        - RAW Sources: `rawSources[]`
+        - Toolkit: `toolkit.*` and Promotion: `promotion.*`
+        - Access Roles: `accessRoles[]`
+        - Global Standards: `globalStandards.*`
+        - Core Model Inheritance defaults and External Models
+        - Observability (optional)
+    3. Review & Generate organization-level YAML (00)
 
-- Tier 01 — Conceptual Model
-    1. Module Basics: `schemaVersion`, `moduleId`
-    2. Objects: `objects[]`
-    3. Relationships: `relationships[]` (enforce edge metadata when type=`edge`)
-    4. External References: `externalReferences[]`
-    5. Data Model: `dataModel.*`
-    6. Performance Hints: `performanceHints.*`
-    7. Review & Generate
+- Data Modules (based on 01 — Conceptual Model)
+    1. Select Project: choose which project this module belongs to (from Organization Projects)
+    2. Module Basics: `schemaVersion`, module identifier (scoped to the selected project)
+    3. Core Business Objects: `objects[]` using core CDM inheritance via `implementsCore`
+    4. Relationships: `relationships[]` including typed edge metadata
+    5. External References and Grouped Views: `externalReferences[]`, `dataModel.*`
+    6. Performance Hints (optional)
+    7. Review & Generate module YAML (01) under the selected project
 
-- Tier XX — Object Specification
-    1. Basics: `schemaVersion`, `moduleId`, `objectId`
-    2. Description: `description.summary`, `description.externalId`
-    3. Identifiers: `identifiers.viewExternalId`, `identifiers.containerExternalId`
-    4. Data Source & Lineage: `dataSource.*`
-    5. Properties: `properties[]`
-    6. Container Spec: `containerSpecification.*`
-    7. Relationships: `relationships[]` (with edge metadata check)
-    8. View Configuration: `viewConfiguration.*`
-    9. Time Series: `timeSeries[]`
-    10. Transformation Plan: `transformationPlan.*`
-    11. Data Quality: `dataQuality.rules[]`
-    12. Observability & Orchestration: `observability.*`, `orchestration.*`
-    13. Review & Generate
+- Data Objects (based on XX — Object Specification)
+    1. Select Project → Select Module → Pick Object from the module’s object list
+    2. Object Basics and Description: `schemaVersion`, `moduleId`, `objectId`, `description.*`
+    3. Identifiers and Data Source & Lineage: `identifiers.*`, `dataSource.*`
+    4. Properties and Container Spec: `properties[]`, `containerSpecification.*`
+    5. Relationships (object-level), View Configuration with `implementsCore`
+    6. Time Series, Transformation Plan, Data Quality, Observability/Orchestration
+    7. Review & Generate object YAML (XX) under the selected module
 
 Implementation plan (high-level)
 
@@ -509,21 +513,21 @@ Toolkit conventions.
 |   |-- 00_Solution_Design_Principles.yaml
 |   |-- ui-state/
 |   |   `-- 00_solution_design.json
-|   `-- modules/
-|       |-- well_performance/
-|       |   |-- 01_Conceptual_Model.yaml
-|       |   |-- XX_Object_Specs/
-|       |   |   |-- well.yaml
-|       |   |   `-- compressor.yaml
-|       |   `-- ui-state/
-|       |       |-- 01_conceptual_model.json
-|       |       `-- xx/
-|       |           |-- well.json
-|       |           `-- compressor.json
-|       `-- docs/                   # Markdown copies saved from the Templates editor
-|           |-- 1712763212345_my_template.md
-|           `-- ...
-|       `-- another_module/
+|   `-- projects/
+|       |-- <projectA>/
+|       |   `-- modules/
+|       |       |-- <moduleX>/
+|       |       |   |-- 01_Conceptual_Model.yaml
+|       |       |   |-- XX_Object_Specs/
+|       |       |   |   |-- <object>.yaml
+|       |       |   |   `-- ...
+|       |       |   `-- ui-state/
+|       |       |       |-- 01_conceptual_model.json
+|       |       |       `-- xx/
+|       |       |           |-- <object>.json
+|       |       |           `-- ...
+|       |       `-- <moduleY>/
+|       `-- <projectB>/
 |
 |-- cdf-modules/
 |   |-- module-xyz/
@@ -722,8 +726,8 @@ Key principles:
     - Relationships (type, multiplicity, labels, resolution hints)
     - External references and grouped views into a data model
   - Output of the UI
-    - `project_templates/modules/<module>/01_Conceptual_Model.yaml`
-    - `project_templates/modules/<module>/ui-state/01_conceptual_model.json`
+    - `project_templates/projects/<project>/modules/<module>/01_Conceptual_Model.yaml`
+    - `project_templates/projects/<project>/modules/<module>/ui-state/01_conceptual_model.json`
 - XX — Object Specification (YAML only)
   - Inputs (examples)
     - Object metadata and lineage (space, RAW sources)
@@ -732,8 +736,8 @@ Key principles:
     - Relationships, implements/requires
     - Time series, transformations, data quality
   - Output of the UI
-    - `project_templates/modules/<module>/XX_Object_Specs/<object>.yaml`
-    - `project_templates/modules/<module>/ui-state/xx/<object>.json`
+    - `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/<object>.yaml`
+    - `project_templates/projects/<project>/modules/<module>/ui-state/xx/<object>.json`
 
 ### 7.3 How the templates relate
 

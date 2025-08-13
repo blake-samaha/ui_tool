@@ -107,12 +107,8 @@
                 },
                 "implementsCore": {
                     "oneOf": [
-                        { "type": "string", "enum": [
-                            "CogniteAsset", "CogniteEvent", "CogniteFile", "CogniteTimeSeries", "CogniteSequence"
-                        ] },
-                        { "type": "array", "items": { "type": "string", "enum": [
-                            "CogniteAsset", "CogniteEvent", "CogniteFile", "CogniteTimeSeries", "CogniteSequence"
-                        ] }, "minItems": 1 }
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" }, "minItems": 1 }
                     ]
                 }
             }

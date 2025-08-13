@@ -2,6 +2,8 @@ import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { FormRenderer } from '@docs-as-code/form-renderer';
 import type { WizardStep } from './types.js';
+import { ProjectContext } from '../../state/ProjectContext.js';
+import { FileBridgeClient } from '@docs-as-code/file-bridge-client';
 
 export function WizardShell({
   steps,
@@ -16,6 +18,9 @@ export function WizardShell({
   onSaveStep: (data: any) => Promise<void>;
   onFinish: (data: any) => Promise<void>;
 }) {
+  const ctx = React.useContext(ProjectContext);
+  const bridgeBaseUrl = ctx?.settings.bridgeBaseUrl || 'http://127.0.0.1:45678';
+  const client = React.useMemo(() => new FileBridgeClient({ baseUrl: bridgeBaseUrl }), [bridgeBaseUrl]);
   const [data, setData] = React.useState<any>(initialData);
   const [params, setParams] = useSearchParams();
   const stepId = params.get('step') || steps[0]?.id;
@@ -99,6 +104,14 @@ export function WizardShell({
                 // Keep local form state in sync and notify parent without creating a feedback loop
                 setData(value as any);
                 onChange(value);
+              }}
+              onDirectoryPick={async () => {
+                try {
+                  const picked = await client.pickRoot();
+                  return picked || undefined;
+                } catch {
+                  return undefined;
+                }
               }}
               hideSubmit
             />

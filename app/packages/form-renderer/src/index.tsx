@@ -11,7 +11,7 @@ type VisibleWhen = {
 };
 
 export type UIControlField = {
-    kind: 'text' | 'textarea' | 'select' | 'checkbox' | 'number';
+    kind: 'text' | 'textarea' | 'select' | 'checkbox' | 'number' | 'directory' | 'multiselect';
     id: string;
     label: string;
     options?: Array<{ value: string; label: string }>;
@@ -91,6 +91,37 @@ function useIsVisible(field: { visibleWhen?: VisibleWhen | VisibleWhen[] }, base
     });
 }
 
+function MultiSelect({ id, options, placeholder }: { id: string; options: Array<{ value: string; label: string }>; placeholder?: string }) {
+    const methods = useFormContext();
+    const current: string[] = methods.watch(id as any) ?? [];
+    const [query, setQuery] = React.useState('');
+    const filtered = React.useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return options;
+        return options.filter((o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q));
+    }, [options, query]);
+    function toggle(value: string) {
+        const set = new Set<string>(Array.isArray(current) ? current : []);
+        if (set.has(value)) set.delete(value); else set.add(value);
+        methods.setValue(id as any, Array.from(set), { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    }
+    const selected = new Set<string>(Array.isArray(current) ? current : []);
+    return (
+        <div className="space-y-2">
+            <input className="w-full rounded-md px-3 py-2 ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-500/40 outline-none bg-white" placeholder={placeholder ?? 'Search...'} value={query} onChange={(e) => setQuery(e.target.value)} />
+            <div className="max-h-40 overflow-auto rounded-md ring-1 ring-slate-200 bg-white">
+                {filtered.map((opt) => (
+                    <label key={opt.value} className="flex items-center gap-2 px-2 py-1 hover:bg-slate-50 cursor-pointer">
+                        <input type="checkbox" checked={selected.has(opt.value)} onChange={() => toggle(opt.value)} />
+                        <span className="text-sm">{opt.label}</span>
+                    </label>
+                ))}
+                {filtered.length === 0 && <div className="px-2 py-1 text-sm text-slate-500">No matches</div>}
+            </div>
+        </div>
+    );
+}
+
 function ControlField({ field, basePath }: { field: UIControlField; basePath?: string }) {
     const methods = useFormContext();
     const name = joinPath(basePath, field.id);
@@ -114,6 +145,7 @@ function ControlField({ field, basePath }: { field: UIControlField; basePath?: s
                 <input id={name} className="rounded-md px-3 py-2 ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-500/40 outline-none bg-white" placeholder={field.placeholder}
                     {...methods.register(name as any)} />
             )}
+            {field.kind === 'directory' && <DirectoryControl id={name} placeholder={field.placeholder} />}
             {field.kind === 'textarea' && (
                 <textarea id={name} className="rounded-md px-3 py-2 ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-500/40 outline-none bg-white" placeholder={field.placeholder}
                     {...methods.register(name as any)} />)
@@ -127,6 +159,9 @@ function ControlField({ field, basePath }: { field: UIControlField; basePath?: s
                     ))}
                 </select>
             )}
+            {field.kind === 'multiselect' && (
+                <MultiSelect id={name} options={field.options ?? []} placeholder={field.placeholder} />
+            )}
             {field.kind === 'checkbox' && (
                 <input id={name} type="checkbox" className="h-4 w-4 rounded" {...methods.register(name as any)} />
             )}
@@ -135,6 +170,24 @@ function ControlField({ field, basePath }: { field: UIControlField; basePath?: s
                     {...methods.register(name as any, { valueAsNumber: true })} />
             )}
             {fieldState.error && <p className="text-sm text-red-600">{fieldState.error.message as string}</p>}
+        </div>
+    );
+}
+
+function DirectoryControl({ id, placeholder }: { id: string; placeholder?: string }) {
+    const methods = useFormContext();
+    const onPick = (methods as any)._onDirectoryPick as undefined | (() => Promise<string | undefined>);
+    async function browse() {
+        if (!onPick) return;
+        const picked = await onPick();
+        if (picked) methods.setValue(id as any, picked, { shouldDirty: true, shouldTouch: true, shouldValidate: true });
+    }
+    return (
+        <div className="flex items-center gap-2">
+            <input id={id} className="flex-1 rounded-md px-3 py-2 ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-500/40 outline-none bg-white" placeholder={placeholder} {...methods.register(id as any)} />
+            <button type="button" className="rounded-md px-3 py-2 text-sm ring-1 ring-slate-300 hover:bg-slate-50" onClick={browse} aria-label="Browse for directory">
+                Browse…
+            </button>
         </div>
     );
 }
@@ -219,6 +272,7 @@ function ControlInput({ field, name }: { field: UIControlField; name: string }) 
             ))}
         </select>
     );
+    if (field.kind === 'multiselect') return <MultiSelect id={name} options={field.options ?? []} placeholder={field.placeholder} />;
     if (field.kind === 'checkbox') return <input type="checkbox" className="h-4 w-4 rounded" {...methods.register(name as any)} />;
     if (field.kind === 'number') return <input type="number" className="w-full rounded-md px-2 py-1 ring-1 ring-slate-300 focus:ring-2 focus:ring-blue-500/40 outline-none" placeholder={field.placeholder} {...methods.register(name as any, { valueAsNumber: true })} />;
     return null;
@@ -319,7 +373,8 @@ export function FormRenderer<TSchema extends z.ZodTypeAny>({
     onSubmit,
     schema,
     hideSubmit,
-    onChange
+    onChange,
+    onDirectoryPick
 }: {
     uiSchema: UISchema;
     defaultValues?: Partial<z.infer<TSchema>>;
@@ -327,11 +382,15 @@ export function FormRenderer<TSchema extends z.ZodTypeAny>({
     schema?: TSchema;
     hideSubmit?: boolean;
     onChange?: (data: z.infer<TSchema>) => void;
+    onDirectoryPick?: () => Promise<string | undefined>;
 }) {
     const methods = useForm<z.infer<TSchema>>({
         defaultValues: defaultValues as z.infer<TSchema>,
         resolver: schema ? (zodResolver(schema) as any) : undefined
     });
+
+    // Attach directory pick handler to methods context so DirectoryControl can call it
+    (methods as any)._onDirectoryPick = onDirectoryPick;
 
     React.useEffect(() => {
         if (!onChange) return;

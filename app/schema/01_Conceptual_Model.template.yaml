@@ -5,13 +5,13 @@ moduleId: my_module
 objects:
   - name: Well
     objectId: well
-    type: Asset
+    implementsCore: CogniteAsset
     viewExternalId: my_module:view:well:v1
     containerExternalId: my_module:container:well:v1
     space: sp_my_project_space
   - name: Work Order
     objectId: workOrder
-    type: Event
+    implementsCore: CogniteEvent
     viewExternalId: my_module:view:work_order:v1
     containerExternalId: my_module:container:work_order:v1
     space: sp_my_project_space

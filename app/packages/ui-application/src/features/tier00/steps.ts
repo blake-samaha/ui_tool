@@ -10,7 +10,7 @@ export const tier00Steps: WizardStep[] = [
     'Repository',
     {
       fields: [
-        { kind: 'text', id: 'repositoryRoot', label: 'Repository root', placeholder: '/abs/path/to/repository', help: 'Pick a local repository using the project selector in the header (Browse…), or paste the absolute path here.' }
+        { kind: 'directory', id: 'repositoryRoot', label: 'Repository root', placeholder: '/abs/path/to/repository', help: 'Pick a local repository using the project selector in the header (Browse…), or paste the absolute path here.' }
       ]
     },
     'Select a local repository to work in. The app will create missing folders under project_templates when you continue.',

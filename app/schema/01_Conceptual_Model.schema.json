@@ -47,14 +47,10 @@
                 },
                 "implementsCore": {
                     "oneOf": [
-                        { "type": "string", "enum": [
-                            "CogniteAsset", "CogniteEvent", "CogniteFile", "CogniteTimeSeries", "CogniteSequence"
-                        ] },
-                        { "type": "array", "items": { "type": "string", "enum": [
-                            "CogniteAsset", "CogniteEvent", "CogniteFile", "CogniteTimeSeries", "CogniteSequence"
-                        ] }, "minItems": 1 }
+                        { "type": "string" },
+                        { "type": "array", "items": { "type": "string" }, "minItems": 1 }
                     ],
-                    "description": "Core CDM views implemented by this object (space=cdf_cdm)."
+                    "description": "Core or industry CDM views implemented by this object (space=cdf_cdm and extensions)."
                 },
                 "viewExternalId": {
                     "type": "string",

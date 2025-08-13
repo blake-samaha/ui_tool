@@ -83,7 +83,7 @@ export function Tier00Page() {
             <WizardShell
                 key={formKey}
                 steps={steps}
-                initialData={defaults}
+                initialData={{ repositoryRoot: settings.projectRoot, ...defaults }}
                 onChange={() => { /* ignore live changes to avoid feedback loop */ }}
                 onSaveStep={(d) => handleSave(d, false)}
                 onFinish={(d) => handleSave(d, true)}

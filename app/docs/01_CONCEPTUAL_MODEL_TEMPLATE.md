@@ -22,13 +22,13 @@ For each object, specify its type to guide the modeling process.
 
 - **Object:** `[e.g., Well]`
   - **Object ID:** `<REPLACE_ME: well>`
-  - **Type:** `[Asset|Event|Document|Process|File|TimeSeries]`
+  - **Implements Core View(s):** `[CogniteAsset|CogniteEvent|CogniteFile|CogniteTimeSeries|CogniteSequence|CogniteEquipment]`
   - **View External ID:** `<REPLACE_ME: e.g., {{ moduleId }}:view:well:v1>`
   - **Container External ID:** `<REPLACE_ME: e.g., {{ moduleId }}:container:well:v1>`
   - **Space:** `<REPLACE_ME: e.g., sp_my_project_space>`
 - **Object:** `[e.g., Work Order]`
   - **Object ID:** `<REPLACE_ME: workOrder>`
-  - **Type:** `[Event]`
+  - **Implements Core View(s):** `[CogniteEvent]`
   - **View External ID:** `<REPLACE_ME>`
   - **Container External ID:** `<REPLACE_ME>`
   - **Space:** `<REPLACE_ME>`
