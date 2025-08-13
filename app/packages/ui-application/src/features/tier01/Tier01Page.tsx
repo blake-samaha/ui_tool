@@ -58,9 +58,14 @@ export function Tier01Page() {
 
     async function handleSaveStep(data: any) {
         if (!settings.projectRoot) return;
-        if (!data.moduleId || !projectId) return;
-        const { uiState } = tier01Paths(settings.projectRoot, projectId, data.moduleId);
+        const proj = projectId || picked?.projectId;
+        const moduleId = data.moduleId || picked?.moduleId;
+        if (!proj || !moduleId) return;
+        const { uiState, yaml } = tier01Paths(settings.projectRoot, proj, moduleId);
         await client.mkdirp(uiState.slice(0, uiState.lastIndexOf('/')));
+        await client.mkdirp(yaml.slice(0, yaml.lastIndexOf('/')));
+        // Write a stub YAML if not present to surface draft file location early
+        try { await client.read(yaml); } catch { await client.write(yaml, emitYaml({ schemaVersion: data.schemaVersion ?? 1, moduleId, objects: data.objects ?? [] }, { indent: 2 })); }
         await client.write(uiState, JSON.stringify(data, null, 2) + '\n');
     }
 
@@ -96,7 +101,7 @@ export function Tier01Page() {
         <div className="space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
-                    <WizardShell
+                        <WizardShell
                         key={formKey}
                         steps={tier01Steps}
                         initialData={defaults}

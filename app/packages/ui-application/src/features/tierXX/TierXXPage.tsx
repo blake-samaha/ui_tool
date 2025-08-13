@@ -92,9 +92,15 @@ export function TierXXPage() {
 
     async function handleSaveStep(data: any) {
         if (!settings.projectRoot) return;
-        if (!data.moduleId || !data.objectId || !projectId) return;
-        const { uiState } = tierXXPaths(settings.projectRoot, projectId, data.moduleId, data.objectId);
+        const proj = projectId || pickedModule?.projectId;
+        const moduleId = data.moduleId || pickedModule?.moduleId;
+        const objectId = data.objectId || pickedObject?.objectId;
+        if (!proj || !moduleId || !objectId) return;
+        const { uiState, yaml } = tierXXPaths(settings.projectRoot, proj, moduleId, objectId);
         await client.mkdirp(uiState.slice(0, uiState.lastIndexOf('/')));
+        await client.mkdirp(yaml.slice(0, yaml.lastIndexOf('/')));
+        // Write a stub YAML if not present to enable draft persistence visibility
+        try { await client.read(yaml); } catch { await client.write(yaml, emitYaml({ schemaVersion: data.schemaVersion ?? 1, moduleId, objectId }, { indent: 2 })); }
         await client.write(uiState, JSON.stringify(data, null, 2) + '\n');
     }
 
@@ -144,7 +150,7 @@ export function TierXXPage() {
                     <WizardShell key={formKey} steps={tierXXSteps} initialData={defaults} onChange={(d: any) => setDefaults(d)} onSaveStep={handleSaveStep} onFinish={handleFinish} />
                 </div>
                 <aside className="space-y-4">
-                    <a href={`/tier01?step=objects`} className="inline-flex items-center px-3 py-1.5 rounded-md ring-1 ring-slate-300 hover:bg-slate-50">Open 01 (module)</a>
+                    <a href={`/tier01?step=objects&projectId=${projectId ?? pickedModule?.projectId ?? ''}`} className="inline-flex items-center px-3 py-1.5 rounded-md ring-1 ring-slate-300 hover:bg-slate-50">Open 01 (module)</a>
                     <JsonExplorer title="Current XX (working data)" data={defaults} defaultOpenDepth={1} />
                     {inherited.tier01 && <JsonExplorer title="Inherited: Tier 01" data={inherited.tier01} defaultOpenDepth={1} />}
                     {inherited.tier00 && <JsonExplorer title="Inherited: Tier 00" data={inherited.tier00} defaultOpenDepth={0} />}

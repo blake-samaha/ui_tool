@@ -28,14 +28,44 @@ export function WizardShell({
   const step = steps[idx] ?? steps[0];
   const [saving, setSaving] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [dirty, setDirty] = React.useState(false);
+  const [resetSeq, setResetSeq] = React.useState(0);
+
+  // Warn on browser unload if there are unsaved changes
+  React.useEffect(() => {
+    function beforeUnload(e: BeforeUnloadEvent) {
+      if (!dirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+    }
+    window.addEventListener('beforeunload', beforeUnload);
+    return () => window.removeEventListener('beforeunload', beforeUnload);
+  }, [dirty]);
 
   React.useEffect(() => {
     setData(initialData);
   }, [initialData]);
 
-  function goTo(i: number) {
+  async function goTo(i: number) {
     const s = steps[i];
     if (!s) return;
+    if (dirty) {
+      const proceed = window.confirm('You have unsaved changes. Save before navigating? Press OK to save & continue, Cancel to discard changes.');
+      if (proceed) {
+        setSaving(true);
+        try {
+          await onSaveStep(data);
+          setResetSeq((v) => v + 1); // mark form pristine
+          setDirty(false);
+        } catch (e: any) {
+          setError(String(e?.message ?? e));
+        } finally {
+          setSaving(false);
+        }
+      } else {
+        // discard: do nothing special
+      }
+    }
     setParams((p) => {
       p.set('step', s.id);
       return p;
@@ -53,11 +83,13 @@ export function WizardShell({
     setSaving(true);
     try {
       await onSaveStep(data);
+      setResetSeq((v) => v + 1);
+      setDirty(false);
       if (nextIsFinish) {
         await onFinish(data);
         return;
       }
-      goTo(idx + 1);
+      await goTo(idx + 1);
     } catch (e: any) {
       setError(String(e?.message ?? e));
     } finally {
@@ -65,9 +97,9 @@ export function WizardShell({
     }
   }
 
-  function handleBack() {
+  async function handleBack() {
     setError(null);
-    goTo(idx - 1);
+    await goTo(idx - 1);
   }
 
   return (
@@ -113,6 +145,8 @@ export function WizardShell({
                   return undefined;
                 }
               }}
+              onDirtyChange={setDirty}
+              externalResetCounter={resetSeq}
               hideSubmit
             />
           )}

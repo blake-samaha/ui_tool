@@ -75,6 +75,8 @@ export function Tier00Page() {
         await client.mkdirp(uiDir);
         await client.mkdirp(yamlDir);
         await client.write(uiState, JSON.stringify(data, null, 2) + '\n');
+        // Always ensure a stub YAML exists to support partial save visibility
+        try { await client.read(yamlPath); } catch { await client.write(yamlPath, yamlText); }
         if (writeYaml) {
             await client.write(yamlPath, yamlText);
             setYaml(yamlText);

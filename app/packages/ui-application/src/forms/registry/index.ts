@@ -1,8 +1,8 @@
 // Registry of known core and process industry views for multiselect controls.
 // Source: Cognite Core Data Model and Process Industry Data Model documentation.
-export const KNOWN_CORE_VIEWS: Array<{ value: string; label: string }> = [
+export const KNOWN_CORE_VIEWS: Array<{ value: string; label: string; group?: string; help?: string }> = [
   // Core concepts
-  { value: 'CogniteAsset', label: 'CogniteAsset' },
+  { value: 'CogniteAsset', label: 'CogniteAsset', group: 'Core', help: 'Core asset object' },
   { value: 'CogniteAssetClass', label: 'CogniteAssetClass' },
   { value: 'CogniteAssetType', label: 'CogniteAssetType' },
   { value: 'CogniteEquipment', label: 'CogniteEquipment' },
@@ -11,15 +11,15 @@ export const KNOWN_CORE_VIEWS: Array<{ value: string; label: string }> = [
   { value: 'CogniteFileCategory', label: 'CogniteFileCategory' },
   { value: 'CogniteTimeSeries', label: 'CogniteTimeSeries' },
   { value: 'CogniteSequence', label: 'CogniteSequence' },
-  { value: 'CogniteEvent', label: 'CogniteEvent' },
+  { value: 'CogniteEvent', label: 'CogniteEvent', group: 'Core', help: 'Time-bounded event' },
   { value: 'CogniteActivity', label: 'CogniteActivity' },
   { value: 'CogniteAnnotation', label: 'CogniteAnnotation' },
   { value: 'CogniteDiagramAnnotation', label: 'CogniteDiagramAnnotation' },
   { value: 'CogniteUnit', label: 'CogniteUnit' },
   // 3D-related concepts (views and view-only types)
-  { value: 'Cognite3DObject', label: 'Cognite3DObject' },
+  { value: 'Cognite3DObject', label: 'Cognite3DObject', group: '3D' },
   { value: 'Cognite3DModel', label: 'Cognite3DModel' },
-  { value: 'CogniteCADModel', label: 'CogniteCADModel (view only)' },
+  { value: 'CogniteCADModel', label: 'CogniteCADModel (view only)', group: '3D' },
   { value: 'Cognite3DRevision', label: 'Cognite3DRevision' },
   { value: 'CognitePointCloudModel', label: 'CognitePointCloudModel (view only)' },
   { value: 'Cognite360ImageModel', label: 'Cognite360ImageModel (view only)' },
@@ -34,16 +34,16 @@ export const KNOWN_CORE_VIEWS: Array<{ value: string; label: string }> = [
 ];
 
 // Extendable: Add process industry model types as needed
-export const KNOWN_PROCESS_VIEWS: Array<{ value: string; label: string }> = [
+export const KNOWN_PROCESS_VIEWS: Array<{ value: string; label: string; group?: string; help?: string }> = [
   // Process Industry Data Model concepts (expand as needed)
-  { value: 'CogniteProcessUnit', label: 'CogniteProcessUnit' },
+  { value: 'CogniteProcessUnit', label: 'CogniteProcessUnit', group: 'Process' },
   { value: 'CogniteProcessSystem', label: 'CogniteProcessSystem' },
   { value: 'CogniteProcessArea', label: 'CogniteProcessArea' },
   { value: 'CognitePipingNetwork', label: 'CognitePipingNetwork' },
   { value: 'CognitePipeline', label: 'CognitePipeline' },
   { value: 'CogniteLine', label: 'CogniteLine' },
   { value: 'CogniteValve', label: 'CogniteValve' },
-  { value: 'CognitePSV', label: 'CognitePSV (Pressure Safety Valve)' },
+  { value: 'CognitePSV', label: 'CognitePSV (Pressure Safety Valve)', group: 'Process', help: 'Pressure Safety Valve' },
   { value: 'CogniteReliefValve', label: 'CogniteReliefValve' },
   { value: 'CogniteOrificePlate', label: 'CogniteOrificePlate' },
   { value: 'CogniteFlowMeter', label: 'CogniteFlowMeter' },
