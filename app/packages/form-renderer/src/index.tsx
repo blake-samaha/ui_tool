@@ -290,10 +290,22 @@ function TableArrayField({ field, basePath }: { field: UIArrayField; basePath?: 
     const visible = fa.fields.slice(0, limit);
 
     function applyTemplate(template: string, row: any, root: any): string {
+        // Fallbacks: if values are not present in form state, try URL params
+        let projectId: string | undefined = root?.projectId;
+        let moduleId: string | undefined = root?.moduleId;
+        let objectId: string | undefined = row?.objectId;
+
+        try {
+            const params = new URL(window.location.href).searchParams;
+            if (!projectId) projectId = params.get('projectId') || undefined;
+            if (!moduleId) moduleId = params.get('moduleId') || undefined;
+            if (!objectId) objectId = params.get('objectId') || undefined;
+        } catch {}
+
         return template
-            .replace(/\{\{\s*projectId\s*\}\}/g, String(root?.projectId ?? ''))
-            .replace(/\{\{\s*moduleId\s*\}\}/g, String(root?.moduleId ?? ''))
-            .replace(/\{\{\s*objectId\s*\}\}/g, String(row?.objectId ?? ''));
+            .replace(/\{\{\s*projectId\s*\}\}/g, String(projectId ?? ''))
+            .replace(/\{\{\s*moduleId\s*\}\}/g, String(moduleId ?? ''))
+            .replace(/\{\{\s*objectId\s*\}\}/g, String(objectId ?? ''));
     }
 
     return (

@@ -167,15 +167,15 @@ Guiding principles:
 - Tier 2 — `01_CONCEPTUAL_MODEL_TEMPLATE.yaml`
     - Zod Data Schema for core objects and relationships.
     - JSON UI Schema with basic repeatable lists for objects and relationships.
-    - Outputs: `project_templates/modules/<module>/01_Conceptual_Model.yaml` and
-      `project_templates/modules/<module>/ui-state/01_conceptual_model.json`.
+    - Outputs: `project_templates/projects/<project>/modules/<module>/01_Conceptual_Model.yaml` and
+      `project_templates/projects/<project>/modules/<module>/ui-state/01_conceptual_model.json`.
     - Status: Not started.
 - Tier 3 — `XX_Object_Specification_Template.yaml`
     - Zod Data Schema for properties, relationships, container spec.
     - JSON UI Schema with basic repeatable lists for properties and relations.
-    - Outputs: `project_templates/modules/<module>/XX_Object_Specs/<object>.yaml`
+    - Outputs: `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/<object>.yaml`
       and
-      `project_templates/modules/<module>/ui-state/xx/<object>.json`.
+      `project_templates/projects/<project>/modules/<module>/ui-state/xx/<object>.json`.
     - Status: Not started.
 
 ### 3.5 Wizard-style UI (MVP)
@@ -557,7 +557,7 @@ Key principles:
 - `project_templates/` is the human-editable source the UI owns; it is separate
   from `cdf-modules/` to avoid crowding Toolkit YAML with design metadata.
 - `project_templates/ui-state/` stores typed JSON snapshots for round-trip.
-- `project_templates/modules/<module>/` holds 01/XX for each data model.
+- `project_templates/projects/<project>/modules/<module>/` holds 01/XX for each data model.
 - The UI reads/writes only `project_templates/**` and never writes under
   `cdf-modules/**`.
 - Add modules by copying a template; minimal cross-module coupling.
@@ -577,7 +577,7 @@ Key principles:
     - Click “Initialize project templates” if `project_templates/` is missing; the app (or `pnpm init-project /abs/path`) will create folders:
         - `project_templates/`
         - `project_templates/ui-state/`
-        - `project_templates/modules/<module>/XX_Object_Specs/`
+        - `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/`
 - Switching roots
     - Use the Recent roots dropdown to quickly switch the working root
     - The wizard autosaves UI-state to the currently selected root; switching roots will load that root’s UI-state if present
@@ -635,11 +635,11 @@ Key principles:
 - Source of truth for humans and AI:
   - Root-level `project_templates/` holds templates and UI state.
 - `project_templates/00_Solution_Design_Principles.yaml` is project-wide.
-- `project_templates/modules/<module>/01_Conceptual_Model.yaml` and
+- `project_templates/projects/<project>/modules/<module>/01_Conceptual_Model.yaml` and
     `.../XX_Object_Specs/*.yaml` are per-module.
 - UI state snapshots for rehydration:
   - `project_templates/ui-state/00_solution_design.json` for Tier 00.
-  - `project_templates/modules/<module>/ui-state/01_conceptual_model.json` and
+  - `project_templates/projects/<project>/modules/<module>/ui-state/01_conceptual_model.json` and
     `.../ui-state/xx/*.json` for Tier XX.
 - Load precedence in the UI:
   1) If corresponding `ui-state/*.json` exists, load it to prefill.
@@ -951,9 +951,9 @@ Where to put it
 Expected layout after first run
 - `project_templates/00_Solution_Design_Principles.yaml`
 - `project_templates/ui-state/00_solution_design.json`
-- `project_templates/modules/<module>/01_Conceptual_Model.yaml`
-- `project_templates/modules/<module>/XX_Object_Specs/<object>.yaml`
-- `project_templates/modules/<module>/ui-state/...`
+- `project_templates/projects/<project>/modules/<module>/01_Conceptual_Model.yaml`
+- `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/<object>.yaml`
+- `project_templates/projects/<project>/modules/<module>/ui-state/...`
 
 Common mistakes and fixes
 - Wrong project root selected
