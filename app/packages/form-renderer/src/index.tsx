@@ -14,7 +14,7 @@ export type UIControlField = {
     kind: 'text' | 'textarea' | 'select' | 'checkbox' | 'number' | 'directory' | 'multiselect';
     id: string;
     label: string;
-    options?: Array<{ value: string; label: string }>;
+    options?: Array<{ value: string; label: string; group?: string; help?: string }>;
     help?: string; // tooltip/help text describing the field and example usage
     placeholder?: string; // optional placeholder for inputs
     visibleWhen?: VisibleWhen | VisibleWhen[];
@@ -375,7 +375,9 @@ export function FormRenderer<TSchema extends z.ZodTypeAny>({
     schema,
     hideSubmit,
     onChange,
-    onDirectoryPick
+    onDirectoryPick,
+    onDirtyChange,
+    externalResetCounter
 }: {
     uiSchema: UISchema;
     defaultValues?: Partial<z.infer<TSchema>>;
@@ -384,6 +386,8 @@ export function FormRenderer<TSchema extends z.ZodTypeAny>({
     hideSubmit?: boolean;
     onChange?: (data: z.infer<TSchema>) => void;
     onDirectoryPick?: () => Promise<string | undefined>;
+    onDirtyChange?: (isDirty: boolean) => void;
+    externalResetCounter?: number;
 }) {
     const methods = useForm<z.infer<TSchema>>({
         defaultValues: defaultValues as z.infer<TSchema>,
@@ -398,6 +402,20 @@ export function FormRenderer<TSchema extends z.ZodTypeAny>({
         const sub = methods.watch((value) => onChange(value as any));
         return () => sub.unsubscribe();
     }, [methods, onChange]);
+
+    // Report dirty-state changes to parent
+    React.useEffect(() => {
+        if (!onDirtyChange) return;
+        onDirtyChange(methods.formState.isDirty);
+    }, [methods.formState.isDirty, onDirtyChange]);
+
+    // Allow external reset to clear dirty state without changing values
+    React.useEffect(() => {
+        if (externalResetCounter === undefined) return;
+        // Reset to current values to mark pristine
+        const current = methods.getValues();
+        methods.reset(current);
+    }, [externalResetCounter]);
 
     return (
         <FormProvider {...methods}>
