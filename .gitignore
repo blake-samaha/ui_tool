@@ -1,0 +1,7 @@
+node_modules/
+packages/**/dist/
+**/*.tsbuildinfo
+packages/**/pnpm-lock.yaml
+.turbo/
+
+

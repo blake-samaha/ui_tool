@@ -37,6 +37,8 @@ Guiding principles:
     - `00_Solution_Design_Principles.yaml` (project-wide)
     - `01_Conceptual_Model.yaml` per module
     - `XX_Object_Specs/*.yaml` per object
+    - `02_Data_Consumption_Patterns.yaml` per module
+    - `03_Governance_And_Ops.yaml` per project
     - UI-state JSON snapshots for round-trip editing
     - Note: These are requirements YAML files, not CDF Toolkit YAML.
   - Provide copy/export of generated templates and write outputs to
@@ -98,7 +100,7 @@ Guiding principles:
 - Zod Data Schemas for all three templates (00, 01, XX).
 - JSON UI Schemas for all three templates.
 - FormRenderer produces interactive forms from schemas for each tier.
-- Basic navigation across tiers (tabs or wizard) to complete the full set.
+- Navigation across tiers (see `app/docs/wizard_requirements.md`).
 - Basic inputs: text, textarea, select (Shadcn/ui + Radix + Tailwind).
 - RHF + Zod validation with clear per-field errors.
 - Template generation (YAML requirements) entirely client-side.
@@ -106,6 +108,7 @@ Guiding principles:
 - Project root selector and multi-repo switcher: choose a repo root on launch,
   switch via a Recent Projects menu, read/write only under the selected root,
   and initialize `project_templates/` if absent.
+ - Initialization and resume behavior (see `app/docs/wizard_requirements.md`): detect prior UI-state/YAML and auto-resume or import as needed.
 - Runtime inputs captured in the UI and emitted to templates (no external
   auth or cloud calls): `moduleId`, target `space`, environment details
   (`cdf_cluster` / `cdf_region`), IdP group source IDs (admin/user), and
@@ -178,155 +181,35 @@ Guiding principles:
       `project_templates/projects/<project>/modules/<module>/ui-state/xx/<object>.json`.
     - Status: Not started.
 
-### 3.5 Wizard-style UI (MVP)
+### 3.5 Wizard feature set (source of truth)
 
-- Goals
-    - Reduce cognitive load by guiding users step-by-step through each template
-    - Make progress clear, prevent invalid submissions, and provide an easy review before export
-    - Enable targeted collaboration and review on specific sections without scrolling large forms
-- Navigation and behavior
-    - Linear Next/Back navigation with a visible Stepper showing current step and completion state
-    - Steps are individually validated; users cannot proceed if step has blocking errors
-    - Users may jump back to previously completed steps; future steps remain disabled until unlocked
-    - Wizard state persists in memory, autosaves to `ui-state/*.json` on step completion; manual Save available at any time
-    - Final Review step shows a read-only summary and YAML preview with Copy/Export buttons
-- Validation
-    - Zod schema is reused at step-scope: each step validates only the fields it owns
-    - Cross-step validations run on Review; errors link back to the corresponding step
-    - Conditional validations are enforced (for example, `edge` relationships require `edgeSpace` and `edgeTypeExternalId`)
-- File I/O
-    - Autosave `ui-state/*.json` after each successful step validation
-    - Export writes the tier YAML and the `ui-state/*.json` snapshot deterministically
-    - Writes are limited to `project_templates/**` via the local file-bridge
-- YAML preview
-    - Visible in the Review step; Copy to clipboard is available
-    - Optional on-demand preview per step to reduce distraction
-- Accessibility and UX
-    - Keyboard navigation (Enter to continue, Shift+Tab/Tab between fields)
-    - Clear, compact help text per field; error messages shown inline and in a step-level summary
-    - Persistent progress indicator and unsaved-changes prompts when navigating away
-
-Wizard phases and steps
-
-- Organization Projects (based on 00 — Solution Design Principles)
-    1. Organization Overview: `schemaVersion`, `projectId` (org/program identifier), glossary link
-    2. Projects: manage a list of CDF projects in the organization, each with:
-        - Environments: `environments[]`
-        - Space: `space.externalId`, `space.description`
-        - RAW Sources: `rawSources[]`
-        - Toolkit: `toolkit.*` and Promotion: `promotion.*`
-        - Access Roles: `accessRoles[]`
-        - Global Standards: `globalStandards.*`
-        - Core Model Inheritance defaults and External Models
-        - Observability (optional)
-    3. Review & Generate organization-level YAML (00)
-
-- Data Modules (based on 01 — Conceptual Model)
-    1. Select Project: choose which project this module belongs to (from Organization Projects)
-    2. Module Basics: `schemaVersion`, module identifier (scoped to the selected project)
-    3. Core Business Objects: `objects[]` using core CDM inheritance via `implementsCore`
-    4. Relationships: `relationships[]` including typed edge metadata
-    5. External References and Grouped Views: `externalReferences[]`, `dataModel.*`
-    6. Performance Hints (optional)
-    7. Review & Generate module YAML (01) under the selected project
-
-- Data Objects (based on XX — Object Specification)
-    1. Select Project → Select Module → Pick Object from the module’s object list
-    2. Object Basics and Description: `schemaVersion`, `moduleId`, `objectId`, `description.*`
-    3. Identifiers and Data Source & Lineage: `identifiers.*`, `dataSource.*`
-    4. Properties and Container Spec: `properties[]`, `containerSpecification.*`
-    5. Relationships (object-level), View Configuration with `implementsCore`
-    6. Time Series, Transformation Plan, Data Quality, Observability/Orchestration
-    7. Review & Generate object YAML (XX) under the selected module
-
-Implementation plan (high-level)
-
-- Step registry
-    - Define a per-tier registry of steps mapping to subsets of the Zod schema and the corresponding UI schema fragments
-    - Each step specifies: `id`, `title`, `fieldsScope` (paths), `uiSchema`, and optional `help`
-- Wizard shell
-    - Reusable `Wizard` component renders Stepper, navigation, content slot, and the Review step
-    - Integrates React Hook Form and Zod at step-scope; advances only when the step validates
-- Persistence
-    - On step success: autosave `ui-state/*.json` to `project_templates/**`
-    - Load precedence remains: UI-state first, then YAML import, else empty
-- Routing
-    - Route per tier (`/tier00`, `/tier01`, `/tierXX`) retains current `stepId` in the querystring for deep links (for example, `/tier01?step=relationships`)
-- Deterministic export
-    - Review step calls the YAML emitter; Copy/Export buttons surface next actions
-- Non-functional
-    - Step transitions under 200ms on modern laptops
-    - Autosave writes under 200ms typical
-
-Acceptance criteria (Wizard)
-
-- Users can complete all steps for Tier 00/01/XX with clear progress indication and gating on invalid data
-- Review step shows a cohesive summary and YAML preview; Copy/Export work as expected
-- Autosave to `ui-state/*.json` occurs at step completion; reload restores wizard progress and data
-- Direct navigation to a specific step is disallowed until preceding steps are valid; back navigation is always allowed
-- Deterministic YAML emit and no trailing spaces/newline behavior preserved
+The wizard’s UX, UI principles, phases, steps, validations, persistence, and outputs are defined in `app/docs/wizard_requirements.md`. That document is the authoritative source; this section intentionally avoids duplicating specifics. This file describes product scope only at a high level.
 
 ### 3.6 Home page and onboarding
 
 - Purpose
-    - Provide a clear introduction to the project, what the wizard will do, and what files will be produced under `project_templates/**`
+    - Provide a clear introduction to the project and what files will be produced under `project_templates/**`
     - Offer a single entry point to start the guided flow and set the working repository root
 - Content and layout
     - Title and short description: explain Docs-as-Code UI, local-only behavior, and the three template tiers (00/01/XX)
     - “What you will do” checklist:
         - Select a repository root (local folder) for `project_templates/**`
-        - Complete Tier 00 → Tier 01 → Tier XX
+        - Complete the guided flow (00 → 01 → XX)
         - Review and export YAML and UI-state JSON
-    - “Start Wizard” primary button
-    - Secondary actions: View documentation (link to this requirements doc), Open recent project roots (dropdown)
-- First-time flow
-    - On click “Start Wizard”:
-        - Step 0 — Select Project Root
-            - Show an input for absolute path to the repo root; prefill from recent roots if available
-            - Bridge health indicator (must be OK to proceed)
-            - Validate that `project_templates/` exists; if missing, offer “Initialize project templates” (creates required folders and seed files)
-            - Persist the selected root in localStorage; add to Recent roots
-        - Navigate to Tier 00, Step 1 on success
-- Returning users
-    - If a valid recent root is present and writable, allow “Continue where I left off” which loads UI-state and resumes the wizard at the last completed step
-    - Otherwise return to Step 0 to select a root
+    - “Start guided flow” primary button
+    - Secondary actions: View documentation (link to this requirements doc and to `app/docs/wizard_requirements.md`), Open recent project roots (dropdown)
+- First-time flow and returning users
+    - Details of the guided flow, step gating, and resume behavior are specified in `app/docs/wizard_requirements.md`.
 
-### 3.7 UI/UX implementation details (cross-tier)
+### 3.7 UI/UX implementation details (app-wide)
 
-- Wizard shell and navigation
-    - Left-aligned Stepper shows steps with completion badges; disabled future steps
-    - Controls: Back, Save & Continue; keyboard shortcuts (Enter to continue)
-    - Step-scoped autosave with timestamp (for example, “Saved at 14:03:12”)
-    - Optional “Skip, fill later” for non-required steps, flagged on the Review page
-- Presentation and readability
-    - Use Section cards with concise helper text; collapse advanced/optional groups
-    - Arrays (objects, relationships, properties) rendered as table-like row editors for clarity
-    - Pattern hints and examples inline (for example, `moduleId` regex and sample)
-    - Chips for categorical inputs (guardrails, capabilities) rather than free text
-    - Compact right-side live summary that updates as users type (toggleable)
-- Validation and guidance
-    - Zod validation at step-scope; inline field errors + step-level error summary
-    - Cross-step validation on Review with links back to steps; “Jump to first error” action
-    - Conditional validations (edge relationships) enforced with contextual guidance
-    - Smart defaults derived from prior answers (for example, prefix external IDs with `moduleId`)
-- Review & Generate
-    - Summary grouped by sections; expandable details
-    - YAML preview with Copy/Download; optional diff against the last exported YAML
-    - Per-step “Preview YAML fragment” toggle for focused verification (optional)
-- File I/O & persistence
-    - Autosave on successful step validation to `ui-state/*.json` under the selected root
-    - Export writes YAML and UI-state deterministically; bridge errors are surfaced via toasts
-    - “Initialize project templates” action when the root is empty; creates required folders
-- Styling and components
-    - Core components: `WizardShell`, `Stepper`, `SectionCard`, `FieldArrayTable`, `YAMLPreviewPanel`, `Toast`
-    - Accessible color contrast, readable spacing, and dark mode support
-- Performance and resilience
-    - Virtualization for long arrays; debounced autosave; lazy YAML preview rendering for large documents
-    - Smooth step transitions (<200ms typical)
-- Accessibility and i18n
-    - ARIA roles on stepper and nav; focus management on step transitions
-    - Error announcements for screen readers; keyboard-only usability
-    - Externalize static labels to enable future localization
+- This document captures app-wide UI/UX guidelines only. The guided flow (wizard) UX/UI, step behaviors, gating, validation model, previews, and persistence are defined in `app/docs/wizard_requirements.md`.
+- App-wide guidelines
+    - Consistent typography, spacing, and contrast; dark mode support
+    - Clear, compact help text and inline error messages
+    - Deterministic file operations with user feedback (toasts)
+    - Keyboard accessibility and proper ARIA roles
+    - Performance targets: responsive interactions under typical loads
 
 
 ## 4. Phased Plan
@@ -342,13 +225,9 @@ Acceptance criteria (Wizard)
 - Outcome: working form for Tier 1 template, valid YAML output, and a small
   data-to-model population demo proving the workflow end-to-end.
 
-Wizard deliverables in Phase 1
+Phase 1 deliverables related to the guided flow
 
-- Implement `WizardShell`, `Stepper`, `SectionCard`, `FieldArrayTable`, `YAMLPreviewPanel`, `Toast`
-- Build step registries and step-scoped validation for Tier 00, Tier 01, and Tier XX
-- Home page onboarding with “Start Wizard” and Step 0 (project root selection, bridge health, init flow)
-- Autosave to `ui-state/*.json` after each step; deterministic export on Review
-- Recent roots menu and writable-root validation; CORS-enabled dev bridge
+- Implement the artifacts and behaviors defined in `app/docs/wizard_requirements.md`.
 
 ### Phase 2: Template Expansion and Abstraction
 
@@ -357,11 +236,9 @@ Wizard deliverables in Phase 1
 - Enable dynamic loading/selection to render any template on demand.
 - Outcome: platform supports all three template types.
 
-Wizard enhancements in Phase 2
+Guided flow enhancements in Phase 2
 
-- ERD preview for Tier 01/XX (read-only) to visualize relationships
-- Per-step YAML fragment preview toggles; diff against last export in Review
-- Import existing YAML to prefill and auto-create missing steps
+- See `app/docs/wizard_requirements.md`.
 
 ### Phase 3: Workflow Integration and Automation
 
@@ -373,10 +250,9 @@ Wizard enhancements in Phase 2
 - Outcome: integrated, round-trip workflow with automation across model,
   RAW loading, and transformations.
 
-Wizard extensions in Phase 3
+Guided flow extensions in Phase 3
 
-- Webhook/commit trigger after export (optional) and CI status feedback (out of scope in MVP)
-- Add collaborative review mode (non-persistent) to annotate Review summary (future)
+- See `app/docs/wizard_requirements.md`.
 
 ### Phase 4: Enterprise Hardening
 
@@ -433,7 +309,7 @@ Wizard extensions in Phase 3
 
 ### 5.3 Landing page standards (Home)
 
-- Single primary CTA in the hero: “Start wizard”. Avoid duplicate links already present in the header.
+- Single primary CTA in the hero: “Start guided flow”. Avoid duplicate links already present in the header.
 - Keep external links (Templates, Official Cognite Documentation) in the top bar only; do not repeat them in the hero.
 - Show status chips compactly in the hero/header:
   - File‑bridge status (Connected/Error/...)
@@ -442,7 +318,7 @@ Wizard extensions in Phase 3
   - Use a horizontal 4‑step timeline with numbered dots and a subtle connector line
   - Copy:
     1) Install and select your repo — Place the app anywhere. In the header, select your local repo root.
-    2) Capture connection and model details — Use the wizard to enter CDF context and define objects/relationships.
+    2) Capture connection and model details — Use the guided flow to enter CDF context and define objects/relationships.
     3) Update your CDF project with AI + Docs — Use the generated YAML/JSON with the AI assistant and Cognite Docs in Cursor to create or update targeted areas.
     4) Deploy to CDF — Apply changes with Cognite Toolkit. Iterate: refine → regenerate → redeploy.
 - Remove redundant “How it works” content if Quickstart is present.
@@ -450,6 +326,7 @@ Wizard extensions in Phase 3
 - Optional conditional blocks:
   - “Continue where you left off” card when prior UI‑state exists
   - “Recent outputs” (compact list of last generated YAML/JSON) — optional for later
+  - “Initialize project templates” prompt when no `project_templates/` is detected
 
 ### 5.4 Templates page and Markdown editor
 
@@ -464,7 +341,7 @@ Wizard extensions in Phase 3
     - "Save to repository" writes to `project_templates/docs/<timestamp>_<name>.md` to avoid collisions.
   - Default filename must be neutral (e.g., `my_template.md`), not the canonical template name.
   - Cancel returns to view mode without saving.
-- Goal: treat templates as working docs and a checklist; the wizard remains the source for structured YAML/JSON.
+- Goal: treat templates as working docs and a checklist; the guided flow (see `app/docs/wizard_requirements.md`) remains the source for structured YAML/JSON.
 
 ### 5.5 Field help tooltips
 
@@ -580,7 +457,7 @@ Key principles:
         - `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/`
 - Switching roots
     - Use the Recent roots dropdown to quickly switch the working root
-    - The wizard autosaves UI-state to the currently selected root; switching roots will load that root’s UI-state if present
+    - The guided flow autosaves UI-state to the currently selected root (see `app/docs/wizard_requirements.md`); switching roots will load that root’s UI-state if present
 - Constraints
     - The dev file-bridge enables CORS and restricts writes; requests from `http://localhost:5173` are allowed
     - This workflow is local-only and does not push to remote repos; commits remain a separate human action
@@ -707,6 +584,8 @@ Key principles:
 - [`XX_Object_Specification_Template.yaml`](../../docs/cdf_project/templates/XX_Object_Specification_Template.md):
   implementation details per object: properties, relationships, view/container,
   transformations, and data quality.
+ - `02_Data_Consumption_Patterns.yaml`: module-level consumption queries and access patterns.
+ - `03_Governance_And_Ops.yaml`: project-level deployment, promotion, and change management.
 
 ### 7.2 Inputs captured by the UI and outputs produced (UI-only; no CDF calls)
 
@@ -738,6 +617,18 @@ Key principles:
   - Output of the UI
     - `project_templates/projects/<project>/modules/<module>/XX_Object_Specs/<object>.yaml`
     - `project_templates/projects/<project>/modules/<module>/ui-state/xx/<object>.json`
+ - 02 — Data Consumption & Access Patterns (YAML only)
+   - Inputs (examples)
+     - Key queries, access patterns, application interfaces
+   - Output of the UI
+     - `project_templates/projects/<project>/modules/<module>/02_Data_Consumption_Patterns.yaml`
+     - `project_templates/projects/<project>/modules/<module>/ui-state/02_data_consumption.json`
+ - 03 — Governance & Operations (YAML only)
+   - Inputs (examples)
+     - Deployment tool/strategy, promotion flows, change management, versioning, SLAs
+   - Output of the UI
+     - `project_templates/03_Governance_And_Ops.yaml`
+     - `project_templates/ui-state/03_governance_and_ops.json`
 
 ### 7.3 How the templates relate
 
@@ -896,7 +787,7 @@ flowchart TD
   (e.g., `moduleId` vs `object_id`).
 - Stable ordering: deterministic key order on emit (top-level then logical groups)
   to minimize diffs.
-- Scalars: quote only when needed (spaces, special chars); ISO 8601 UTC for times.
+- Scalars: quote only when needed (spaces, special chars); prefer ISO 8601 (UTC, Z) for times in docs; when configuring `timestampStandard`, choose one of: `ISO_8601_UTC | RFC_3339 | UNIX_EPOCH_MS | UNIX_EPOCH_S`.
 - Enums: constrained to allowed values defined by Zod schemas; validation errors
   block export.
 - Comments: top-of-file header allowed; inline YAML comments avoided in emitted files to keep round-trip parsing simple.

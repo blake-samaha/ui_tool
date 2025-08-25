@@ -1,4 +1,0 @@
-externalId,name,network_externalId,latitude,longitude,numberOfSeparatorVessels,designInletPressure,designInletTemperature,liquidHandlingCapacity,gasHandlingCapacity,heaterTreaterOrDehydratorPresence,flareOrVaporRecoveryConnection
-north_sf_1,North Separation Facility 1,north_network_1,0.0,0.0,2,"500 psi","120 F","10000 BOPD","50 MMscf/d",true,true
-north_sf_2,North Separation Facility 2,north_network_2,0.0,0.0,3,"550 psi","125 F","15000 BOPD","75 MMscf/d",true,true
-south_sf_1,South Separation Facility 1,south_network_1,0.0,0.0,2,"525 psi","122 F","12000 BOPD","60 MMscf/d",false,true 

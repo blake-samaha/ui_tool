@@ -1,0 +1,28 @@
+---
+globs: *.ts,*.tsx
+description: Enforce modularity and a hard 300-line file cap
+---
+
+### Modularity and file-size limits
+
+- **Hard cap: 300 lines per file**: If a file exceeds 300 lines, split it. Extract submodules, hooks, utilities, or child components.
+- **One component per file**: Allow small local helper subcomponents (≤60 lines) only when tightly coupled and not reused elsewhere.
+- **Function size**: Aim for ≤60 lines per function. Prefer multiple small pure functions over one large routine.
+- **Separation of concerns**: Split UI, stateful hooks, and pure utilities:
+  - `Feature/Feature.tsx` (UI)
+  - `Feature/useFeature.ts` (state/effects)
+  - `Feature/types.ts` (types)
+  - `Feature/index.ts` (barrel)
+- **Imports**: Prefer feature-level barrel files (`index.ts`) for stable import paths.
+- **Reduce nesting**: Refactor complex branches/switches into strategy maps or small functions.
+- **Parameters**: Keep function parameters ≤5; group related params into typed objects.
+- **Long lists/forms**: Extract field groups/steps into dedicated components or config-driven schemas.
+- **Do not hide size in comments**: Splitting must reflect real modular boundaries, not comment blocks.
+
+### Refactor guidance
+
+- Start by extracting pure helpers, then custom hooks, then visual subcomponents.
+- Favor configuration/data-driven approaches over deeply branched logic.
+- Use named exports to avoid import cycles when splitting.
+
+For reference, see [WizardShell.tsx](mdc:packages/ui-app/src/components/wizard/WizardShell.tsx) and consider targeted extraction when editing nearby features.

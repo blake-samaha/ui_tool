@@ -1,0 +1,51 @@
+---
+description: CDF modeling and contextualization best practices for this repo
+globs: modules/*
+---
+
+### CDF Modeling and Contextualization (Quick-Start Rules)
+
+These rules summarize actionable guidance from [docs/best_practices.md](mdc:docs/best_practices.md) for developing against CDF in this repository.
+
+#### Modeling fundamentals
+- Use interface-based, generic GraphQL designs; avoid company-specific type names.
+- Model core asset constructs explicitly: `AssetTag`, `FunctionalLocation`, `Equipment`.
+- Temporary constraint: mixed hierarchies are not supported; put Functional Location data on `AssetTag` until support lands.
+- Organize schemas by spaces:
+  - `source_models` → raw source structure and lineage
+  - `enterprise_models/shared_common` → reusable CDM entities/taxonomies
+  - `enterprise_models/function_specific` → department/function specializations
+  - `solution_models` → consumption-optimized, denormalized views
+  - `contextualization` → entities/states used by contextualization workflows
+- Capture lineage on entities (`sourceId`, `sourceContext`, source timestamps).
+
+#### Contextualization workflows
+- Multi-step flow: metadata digestion → document digestion → reference catalog → diagram detection → entity matching.
+- Standardize key extraction (regex, fixed-width, recombination) and scope-aware aliasing rules.
+- Favor resource-pattern detection over enumerating entities; write to a reference index first.
+- Batch for scale with change detection, retries, large-file decomposition, and queueing.
+
+#### Annotation framework
+- Drive behavior with YAML configuration validated by Pydantic; keep environment-specific overrides externalized.
+- Track state with tags: `DetectInDiagrams`, `ScopeWideDetect`, `ToAnnotate`, `AnnotationInProcess`, `Annotated`, `AnnotationFailed`.
+- Three phases: Preparation (init state) → Launch (group by site/unit, cache, submit jobs) → Finalize (apply results, tag outcome, RAW summaries).
+- Cache by scope (site → unit → area) to reduce API calls substantially.
+
+#### Performance & scalability
+- Prefer CDM instances for workflow state (indexed queries, optimistic locking) over RAW for state.
+- Process hierarchically, batch related entities, parallelize independent branches.
+- Use delta processing based on source timestamps.
+
+#### Data quality
+- Enforce unique IDs, referential integrity, and cross-system consistency.
+- Validate temporal (ordering, windows) and spatial (coordinates, hierarchy) constraints.
+
+#### Monitoring & operations
+- Track quality (matched/unmatched, confidence distributions) and pipeline health (run times, successes/failures/timeouts).
+- Classify and store detailed errors; support retries and dashboards for remediation.
+- Use toolkit build/deploy; run dry-runs first and schedule with cron.
+
+#### Useful repository references
+- Wizard shell composition and modular extraction reference: [packages/ui-app/src/components/wizard/WizardShell.tsx](mdc:packages/ui-app/src/components/wizard/WizardShell.tsx)
+- Consolidated guidance: [docs/best_practices.md](mdc:docs/best_practices.md)
+

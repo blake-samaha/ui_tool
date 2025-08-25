@@ -1,0 +1,23 @@
+---
+globs: *.ts,*.tsx
+description: TypeScript style, clarity, safety, and maintainability rules
+---
+
+### TypeScript guidelines
+
+- **Explicit types at module boundaries**: Always type exports (functions, components, classes). Avoid implicit `any`.
+- **Prefer generics with constraints**: Use generics with clear constraints instead of broad types.
+- **Avoid `any`**: Prefer `unknown` and narrow, or `never` where appropriate. Do not use non-null assertions (`!`).
+- **`type` vs `interface`**: Use `interface` for extendable object shapes; use `type` for unions, intersections, and mapped/conditional types.
+- **Discriminated unions**: Prefer over enums for variants. Use `as const` for literal objects.
+- **Naming**: Functions are verbs; variables and types are descriptive nouns.
+- **Control flow**: Use guard clauses and early returns. Avoid deep nesting.
+- **Function size**: Keep functions small and focused (≤60 lines); extract helpers when larger.
+- **Immutability**: Prefer `readonly` and immutable updates. Never mutate input arguments.
+- **Error handling**: Catch as `unknown`, narrow with predicates, and attach context when rethrowing.
+- **Async**: Be explicit about `Promise` return types. Do not mix `void` and `Promise<void>`.
+- **Imports/exports**: Prefer named exports; avoid default exports in shared modules.
+- **Purity**: Keep utilities pure; isolate side effects at boundaries.
+- **Collections**: Prefer `Record<Key, Value>`, `Map`, and `Set` over loose index signatures.
+- **Documentation**: Add concise docstrings for exported APIs when intent is non-obvious.
+- Do not leave empty catch statements. There should be at least some minimal logging

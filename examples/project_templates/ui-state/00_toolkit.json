@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "businessContext": {
+    "useCases": []
+  },
+  "environments": [
+    {
+      "name": "dev",
+      "cdf_cluster": "greenfield",
+      "cdf_project": "mytestcdf",
+      "idp_tenant_id": "e0be82e3-8d2c-47ae-86f1-ab4ba82aa22c",
+      "authentication": {
+        "method": "client_credentials",
+        "authority": "https://login.microsoftonline.com/cea54d81-a299-4bb4-a31c-58e0e26f637c",
+        "tokenUrl": "https://login.microsoftonline.com/cea54d81-a299-4bb4-a31c-58e0e26f637c/oauth2/v2.0/token",
+        "clientId": "${CLIENT_ID}",
+        "clientSecret": "${CLIENT_SECRET}",
+        "certificateThumbprint": "${CERTIFICATE_THUMBPRINT}"
+      }
+    }
+  ],
+  "repositoryRoot": "/Users/blake.samaha@cognitedata.com/workspace/ui-tool-test",
+  "repositoryHost": "GitHub",
+  "globalStandards": {
+    "timestampStandard": "ISO_8601_UTC",
+    "prefixExternalIdsWithModuleId": true,
+    "naming": {
+      "caseStyle": "snake",
+      "idSeparator": "_",
+      "nameSeparator": ":",
+      "prefixes": {
+        "extractionPipeline": "ep",
+        "transformation": "tr",
+        "function": "fn",
+        "authGroup": "gp",
+        "securityCategory": "sc",
+        "space": "sp"
+      }
+    }
+  },
+  "modules": [
+    {
+      "name": "meEnterpriseModel",
+      "description": "All the objects"
+    }
+  ]
+}

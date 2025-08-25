@@ -1,0 +1,11 @@
+{
+    "files": [],
+    "references": [
+        { "path": "packages/shared-types" },
+        { "path": "packages/ui-components" },
+        { "path": "packages/form-renderer" },
+        { "path": "packages/yaml-emitter" },
+        { "path": "packages/file-bridge-client" },
+        { "path": "packages/ui-app" }
+    ]
+}

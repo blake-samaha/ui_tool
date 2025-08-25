@@ -1,0 +1,54 @@
+{
+    "name": "docs-as-code-ui",
+    "private": true,
+    "version": "0.1.0",
+    "description": "Cognite Docs-as-Code UI monorepo (schema-driven forms + YAML emit)",
+    "license": "UNLICENSED",
+    "packageManager": "pnpm@9.6.0",
+    "engines": {
+        "node": ">=20.0.0"
+    },
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "pnpm --filter ui-app dev",
+        "build": "pnpm -r build",
+        "typecheck": "tsc -b --pretty false",
+        "lint": "eslint . --ext .ts,.tsx,.js,.cjs,.mjs",
+        "format": "prettier --write .",
+        "clean": "rimraf .turbo node_modules packages/*/node_modules packages/*/dist",
+        "preview": "pnpm --filter ui-app preview",
+        "init-project": "node scripts/init-project.js",
+        "smoke": "node scripts/smoke-test.js",
+        "dev-bridge": "node scripts/dev-file-bridge.js --root $(pwd) --port 45678",
+        "dev-all": "node scripts/dev-runner.js --root $(pwd) --port 45678"
+    },
+    "eslintConfig": {
+        "extends": [
+            "./.eslintrc.json"
+        ]
+    },
+    "scriptsExtra": {
+        "depcheck": "pnpm -r dlx depcheck --skip-missing",
+        "ts-prune": "pnpm -r dlx ts-prune",
+        "jscpd": "pnpm dlx jscpd --languages ts,tsx --reporters consoleFull --threshold 1 --ignore 'packages/**/dist/**'",
+        "madge": "pnpm -r dlx madge --circular src"
+    },
+    "devDependencies": {
+        "@types/node": "^22.7.4",
+        "@types/react": "^18.3.23",
+        "@types/react-dom": "^18.3.7",
+        "@typescript-eslint/eslint-plugin": "^8.4.1",
+        "@typescript-eslint/parser": "^8.4.1",
+        "eslint": "^9.9.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-import": "^2.29.1",
+        "eslint-plugin-react": "^7.35.0",
+        "eslint-plugin-react-hooks": "^4.6.2",
+        "eslint-plugin-unused-imports": "^3.2.0",
+        "prettier": "^3.3.3",
+        "rimraf": "^6.0.1",
+        "typescript": "^5.5.4"
+    }
+}

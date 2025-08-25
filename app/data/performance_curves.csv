@@ -1,4 +1,0 @@
-externalId,well_externalId,validFrom,validTo,curveType,assumedConditions,dataPoints,creationMethod,author,creationDate,comments
-pc_n1w1_1,n1_w1,2023-01-16T00:00:00Z,,gas-injection vs. oil-rate,"{""wcut"": 0.17, ""gor"": 1500, ""wellheadPressure"": 1200}","{""gasInjection"": [100, 200, 300], ""oilRate"": [500, 550, 580]}",field test,Engineer A,2023-01-16,"Based on latest well test"
-pc_n2w1_1,n2_w1,2023-01-17T00:00:00Z,,gas-injection vs. oil-rate,"{""wcut"": 0.17, ""gor"": 1600, ""wellheadPressure"": 1300}","{""gasInjection"": [100, 200, 300], ""oilRate"": [600, 640, 670]}",nodal analysis,Engineer B,2023-01-17,""
-pc_s1w1_1,s1_w1,2023-01-18T00:00:00Z,,IPR,"{""wcut"": 0.17, ""gor"": 1400}","{""pressure"": [1000, 800, 600], ""rate"": [0, 200, 450]}",simulation,Engineer C,2023-01-18,"" 

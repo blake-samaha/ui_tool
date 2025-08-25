@@ -1,0 +1,23 @@
+---
+globs: *.tsx
+description: React functional component and hooks best practices
+---
+
+### React best practices
+
+- **Functional components**: Prefer function components and hooks.
+- **Props typing**: Explicitly type props; avoid `any`. Do not use `React.FC`.
+- **Hooks**: Follow the Rules of Hooks. Call hooks at the top level only.
+- **Memoization**: Use `React.memo` for pure presentational components. Use `useCallback` for stable event handlers and `useMemo` for expensive computations.
+- **State**: Keep state minimal; derive data rather than duplicating it.
+- **Effects**: Use effects only for side effects; include complete dependency arrays and provide cleanup when needed.
+- **Refs**: Prefer `useRef` over DOM queries. Forward refs when needed.
+- **Lists**: Provide stable `key`s; avoid array indices as keys.
+- **Rendering performance**: Avoid inline object/array literals and function creations in JSX if they cause re-renders.
+- **Composition**: Prefer composition and context (sparingly) over deep prop drilling. Avoid context for high-frequency updates.
+- **Accessibility**: Use semantic HTML, labels/aria attributes, and keyboard interaction patterns.
+- **Code-splitting**: Use `React.lazy` and `Suspense` where practical; virtualize long lists.
+- **Error handling**: Use error boundaries for render-time errors; handle async errors at the source.
+- **Testing**: Test user-observable behavior, not implementation details.
+- Use idiomatic react
+- reuse and compose components when possible
